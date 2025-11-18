@@ -50,11 +50,11 @@ Note: If this screen tells you that there is no "custom" directory, check that y
 
 ### From a GIT repository
 
-Clone the repository in `$dolibarr_main_document_root_alt/poseidon`
+Clone the repository in `$dolibarr_main_document_root_alt/composableproductkitstock`
 
 ```shell
 cd ....../custom
-git clone git@github.com:gitlogin/poseidon.git poseidon
+git clone git@github.com:gitlogin/composableproductkitstock.git composableproductkitstock
 ```
 
 -->
