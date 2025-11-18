@@ -1,0 +1,13 @@
+# Translation file
+
+# Module label 'ModuleComposableProductKitStockName'
+ModuleComposableProductKitStockName = Stock Composable Produit Kit
+# Module description 'ModuleComposableProductKitStockDesc'
+ModuleComposableProductKitStockDesc = Calculer le stock virtuel composable des produits en kit
+
+#
+# Admin page
+#
+ComposableProductKitStockSetup = Stock Composable Produit Kit
+Settings = Settings
+ComposableProductKitStockSetupPage = Configuration
