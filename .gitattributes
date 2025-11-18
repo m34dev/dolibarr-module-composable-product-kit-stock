@@ -1,0 +1,4 @@
+# Git attributes
+composableproductkitstock/build/* export-ignore
+composableproductkitstock/build export-ignore
+.git* export-ignore
