@@ -1,4 +1,4 @@
-# poseidon for [Dolibarr ERP & CRM](https://www.dolibarr.org)
+# Composable Product Kit Stock for [Dolibarr ERP & CRM](https://www.dolibarr.org)
 
 ## Features
 
@@ -15,7 +15,7 @@ You can download the module package from the official Dolibarr marketplace [Doli
 
 ### From the ZIP file and GUI interface
 
-If the module is a ready-to-deploy zip file, so with a name `module_poseidon-1.0.0.zip` (e.g., when downloading it from a marketplace like [Dolistore](https://www.dolistore.com)),
+If the module is a ready-to-deploy zip file, so with a name `module_composableproductkitstock-1.0.0.zip` (e.g., when downloading it from a marketplace like [Dolistore](https://www.dolistore.com)),
 go to menu `Home> Setup> Modules> Deploy external module` and upload the zip file.
 
 <!--
