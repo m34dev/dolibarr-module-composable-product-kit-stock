@@ -59,7 +59,6 @@ if (!$res) {
 require_once DOL_DOCUMENT_ROOT."/core/lib/admin.lib.php";
 require_once DOL_DOCUMENT_ROOT.'/core/lib/modulebuilder.lib.php';
 require_once '../lib/composableproductkitstock.lib.php';
-//require_once "../class/myclass.class.php";
 
 /**
  * @var Conf $conf

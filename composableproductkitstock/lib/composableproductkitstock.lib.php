@@ -83,3 +83,4 @@ function composableproductkitstockAdminPrepareHead()
 
 	return $head;
 }
+

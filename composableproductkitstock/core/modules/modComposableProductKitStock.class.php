@@ -120,11 +120,12 @@ class modComposableProductKitStock extends DolibarrModules
 			// Set here all hooks context managed by module. To find available hook context, make a "grep -r '>initHooks(' *" on source code. You can also set hook context to 'all'
 			/* BEGIN MODULEBUILDER HOOKSCONTEXTS */
 			'hooks' => array(
-				//   'data' => array(
-				//       'hookcontext1',
-				//       'hookcontext2',
-				//   ),
-				//   'entity' => '0',
+				   'data' => array(
+				       'productcard',
+					   'stockproductcard',
+				       'productcompositioncard',
+				   ),
+				   'entity' => '0',
 			),
 			/* END MODULEBUILDER HOOKSCONTEXTS */
 			// Set this to 1 if features of module are opened to external users
@@ -156,7 +157,7 @@ class modComposableProductKitStock extends DolibarrModules
 		$this->langfiles = array("composableproductkitstock@composableproductkitstock");
 
 		// Prerequisites
-		$this->phpmin = array(7, 4); // Minimum version of PHP required by module
+		$this->phpmin = array(8, 1); // Minimum version of PHP required by module
 		// $this->phpmax = array(8, 0); // Maximum version of PHP required by module
 		$this->need_dolibarr_version = array(18, 0); // Minimum version of Dolibarr required by module
 		// $this->max_dolibarr_version = array(19, -3); // Maximum version of Dolibarr required by module
@@ -479,9 +480,9 @@ class modComposableProductKitStock extends DolibarrModules
 		}
 
 		// Create extrafields during init
-		//include_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
-		//$extrafields = new ExtraFields($this->db);
-		//$result0=$extrafields->addExtraField('composableproductkitstock_separator1', "Separator 1", 'separator', 1,  0, 'thirdparty',   0, 0, '', array('options'=>array(1=>1)), 1, '', 1, 0, '', '', 'composableproductkitstock@composableproductkitstock', 'isModEnabled("composableproductkitstock")');
+		include_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
+		$extrafields = new ExtraFields($this->db);
+		$result0=$extrafields->addExtraField('composableproductkitstock_composablestock', "Composable product kit stock", 'int', 1,  10, 'product',   0, 0, '0', '', 0, '', 1, 'Maximum composable stock for product kit based on lowest necessary stock of products composing the kit', '$objectoffield->stock_reel', '', 'composableproductkitstock@composableproductkitstock', 'isModEnabled("composableproductkitstock")');
 		//$result1=$extrafields->addExtraField('composableproductkitstock_myattr1', "New Attr 1 label", 'boolean', 1,  3, 'thirdparty',   0, 0, '', '', 1, '', -1, 0, '', '', 'composableproductkitstock@composableproductkitstock', 'isModEnabled("composableproductkitstock")');
 		//$result2=$extrafields->addExtraField('composableproductkitstock_myattr2', "New Attr 2 label", 'varchar', 1, 10, 'project',      0, 0, '', '', 1, '', -1, 0, '', '', 'composableproductkitstock@composableproductkitstock', 'isModEnabled("composableproductkitstock")');
 		//$result3=$extrafields->addExtraField('composableproductkitstock_myattr3', "New Attr 3 label", 'varchar', 1, 10, 'bank_account', 0, 0, '', '', 1, '', -1, 0, '', '', 'composableproductkitstock@composableproductkitstock', 'isModEnabled("composableproductkitstock")');

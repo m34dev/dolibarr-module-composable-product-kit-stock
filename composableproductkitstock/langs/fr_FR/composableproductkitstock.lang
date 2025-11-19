@@ -11,3 +11,5 @@ ModuleComposableProductKitStockDesc = Calculer le stock virtuel composable des p
 ComposableProductKitStockSetup = Stock Composable Produit Kit
 Settings = Settings
 ComposableProductKitStockSetupPage = Configuration
+ComposableProductKitStockLevel = Stock composable produit kit
+ComposableProductKitStockLevelTip = Nombre maximum de kits produit composables. Basé sur le stock physique disponible des sous-produits
