@@ -123,7 +123,7 @@ class modComposableProductKitStock extends DolibarrModules
 				   'data' => array(
 				       'productcard',
 					   'stockproductcard',
-				       'productcompositioncard',
+				       // 'productcompositioncard',
 					   'productservicelist'
 				   ),
 				   'entity' => '0',
