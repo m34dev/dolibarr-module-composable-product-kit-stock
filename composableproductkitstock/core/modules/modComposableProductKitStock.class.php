@@ -124,6 +124,7 @@ class modComposableProductKitStock extends DolibarrModules
 				       'productcard',
 					   'stockproductcard',
 				       'productcompositioncard',
+					   'productservicelist'
 				   ),
 				   'entity' => '0',
 			),
@@ -483,8 +484,8 @@ class modComposableProductKitStock extends DolibarrModules
 
 		// Create extrafields during init
 		include_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
-		$extrafields = new ExtraFields($this->db);
-		$result0=$extrafields->addExtraField('composableproductkitstock_composablestock', "Composable product kit stock", 'int', 1,  10, 'product',   0, 0, '0', '', 0, '', 1, 'Maximum composable stock for product kit based on lowest necessary stock of products composing the kit', '$objectoffield->stock_reel', '', 'composableproductkitstock@composableproductkitstock', 'isModEnabled("composableproductkitstock")');
+		//$extrafields = new ExtraFields($this->db);
+		//$result0=$extrafields->addExtraField('composableproductkitstock_composablestock', "Composable product kit stock", 'int', 1,  10, 'product',   0, 0, '0', '', 0, '', 1, 'Maximum composable stock for product kit based on lowest necessary stock of products composing the kit', '$objectoffield->stock_reel', '', 'composableproductkitstock@composableproductkitstock', 'isModEnabled("composableproductkitstock")');
 		//$result1=$extrafields->addExtraField('composableproductkitstock_myattr1', "New Attr 1 label", 'boolean', 1,  3, 'thirdparty',   0, 0, '', '', 1, '', -1, 0, '', '', 'composableproductkitstock@composableproductkitstock', 'isModEnabled("composableproductkitstock")');
 		//$result2=$extrafields->addExtraField('composableproductkitstock_myattr2', "New Attr 2 label", 'varchar', 1, 10, 'project',      0, 0, '', '', 1, '', -1, 0, '', '', 'composableproductkitstock@composableproductkitstock', 'isModEnabled("composableproductkitstock")');
 		//$result3=$extrafields->addExtraField('composableproductkitstock_myattr3', "New Attr 3 label", 'varchar', 1, 10, 'bank_account', 0, 0, '', '', 1, '', -1, 0, '', '', 'composableproductkitstock@composableproductkitstock', 'isModEnabled("composableproductkitstock")');

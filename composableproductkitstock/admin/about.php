@@ -107,7 +107,7 @@ print load_fiche_titre($langs->trans($title), $linkback, 'object_composableprodu
 
 // Configuration header
 $head = composableproductkitstockAdminPrepareHead();
-print dol_get_fiche_head($head, 'about', $langs->trans($title), 0, 'info');
+print dol_get_fiche_head($head, 'about', $langs->trans($title), 0, 'setup');
 
 dol_include_once('/composableproductkitstock/core/modules/modComposableProductKitStock.class.php');
 $tmpmodule = new modComposableProductKitStock($db);

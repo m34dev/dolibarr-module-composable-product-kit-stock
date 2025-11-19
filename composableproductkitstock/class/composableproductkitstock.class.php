@@ -30,12 +30,14 @@ require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 class ComposableProductKitStock
 {
 	/**
-	 * @param	Product		$product		Product object
-	 * @return	int							Maximum composable stock for product kit. If no subproducts -1. If error -2.
+	 * @param	string		$product_id		Product ID
+	 * @return	int							Maximum composable stock for product kit. If no subproducts -1.
 	 */
-	static function getMaxProductKitComposableStock($product)
+	static function getMaxProductKitComposableStock($product_id)
 	{
 		global $db;
+		$product = new Product($db);
+		$product->fetch($product_id);
 		$product->get_sousproduits_arbo();
 		$max_composable_subproduct_stock = array();
 		$subproducts_physical_stock = array();
@@ -51,11 +53,15 @@ class ComposableProductKitStock
 					dol_syslog('Subproduct ID: ' . $subproduct_id, LOG_DEBUG);
 					$subproduct = new Product($db);
 					$subproduct->fetch($subproduct_id);
-					$subproduct->load_stock('nobatch,novirtual');
-					$subproducts_physical_stock[$subproduct_id] = $subproduct->stock_reel;
-					dol_syslog('Subproduct physical stock: ' . $subproducts_physical_stock[$subproduct_id], LOG_DEBUG);
-					$product_required_subproduct_quantities[$subproduct_id] = $subproduct_data[1];
-					dol_syslog('Product required subproduct ' . $subproduct_id . ' quantity: ' . $product_required_subproduct_quantities[$subproduct_id], LOG_DEBUG);
+					if($subproduct->type == Product::TYPE_SERVICE) {
+						dol_syslog('Subproduct is a service', LOG_DEBUG);
+					} else {
+						$subproduct->load_stock('nobatch,novirtual');
+						$subproducts_physical_stock[$subproduct_id] = $subproduct->stock_reel;
+						dol_syslog('Subproduct physical stock: ' . $subproducts_physical_stock[$subproduct_id], LOG_DEBUG);
+						$product_required_subproduct_quantities[$subproduct_id] = $subproduct_data[1];
+						dol_syslog('Product required subproduct ' . $subproduct_id . ' quantity: ' . $product_required_subproduct_quantities[$subproduct_id], LOG_DEBUG);
+					}
 				}
 			}
 			foreach($subproducts_physical_stock as $subproduct_id => $subproduct_physical_stock) {
