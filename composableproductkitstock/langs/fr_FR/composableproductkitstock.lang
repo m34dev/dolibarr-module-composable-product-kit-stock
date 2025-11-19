@@ -15,3 +15,4 @@ ComposableProductKitStockLevelShort = Stock composable
 ComposableProductKitStockLevel = Stock composable produit kit
 ComposableProductKitStockLevelTip = Nombre maximum de produits kit composables. Basé sur le stock physique disponible des sous-produits.
 NoSubProduct = Aucun sous-produit
+NA = N/A

@@ -148,7 +148,9 @@ class ActionsComposableProductKitStock extends CommonHookActions
 			$product_object = $parameters['obj'];
 			$result = ComposableProductKitStock::getMaxProductKitComposableStock($product_object->rowid);
 			if($result == -1) {
-				$composable_produt_kit_stock = $langs->trans("NoSubProduct");
+				$composable_produt_kit_stock = $langs->trans("NA");
+			} elseif($result == -2) {
+				$composable_produt_kit_stock = $langs->trans("NoSubProduct");;
 			} else {
 				$composable_produt_kit_stock = (string)$result;
 			}

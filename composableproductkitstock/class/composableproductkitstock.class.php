@@ -31,7 +31,7 @@ class ComposableProductKitStock
 {
 	/**
 	 * @param	string		$product_id		Product ID
-	 * @return	int							Maximum composable stock for product kit. If no subproducts -1.
+	 * @return	int							Maximum composable stock for product kit. If the product is a service -1. If no subproducts -2.
 	 */
 	static function getMaxProductKitComposableStock($product_id)
 	{
@@ -42,8 +42,10 @@ class ComposableProductKitStock
 		$max_composable_subproduct_stock = array();
 		$subproducts_physical_stock = array();
 		$product_required_subproduct_quantities = array();
-		if(empty($product->sousprods)) {
+		if($product->type == Product::TYPE_SERVICE) {
 			return -1;
+		} elseif(empty($product->sousprods)) {
+			return -2;
 		} else {
 			dol_syslog('ComposableProductKitStock::getMaxProductKitComposableStock', LOG_DEBUG);
 			dol_syslog('Product has ' . count($product->sousprods) . ' subproducts', LOG_DEBUG);
