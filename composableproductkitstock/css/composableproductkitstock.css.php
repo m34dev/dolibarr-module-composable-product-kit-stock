@@ -99,25 +99,3 @@ if (empty($dolibarr_nocache)) {
 }
 
 ?>
-
-div.mainmenu.composableproductkitstock::before {
-	content: "\f249";
-}
-div.mainmenu.composableproductkitstock {
-	background-image: none;
-}
-
-input.composableproductkitstockCompatibilityOK {
-    color: white;
-    background-color: green;
-}
-
-input.composableproductkitstockCompatibilityKO {
-    color: white;
-    background-color: red;
-}
-
-input.composableproductkitstockCompatibilityWarning {
-    color: white;
-    background-color: orange;
-}
