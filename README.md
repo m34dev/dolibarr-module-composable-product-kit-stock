@@ -2,7 +2,7 @@
 
 ## Features
 
-XXX
+- Show composable product kit stock on product card and product stock card
 
 ## Module installation
 
