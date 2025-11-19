@@ -12,4 +12,4 @@ ComposableProductKitStockSetup = Stock Composable Produit Kit
 Settings = Settings
 ComposableProductKitStockSetupPage = Configuration
 ComposableProductKitStockLevel = Stock composable produit kit
-ComposableProductKitStockLevelTip = Nombre maximum de kits produit composables. Basé sur le stock physique disponible des sous-produits
+ComposableProductKitStockLevelTip = Nombre maximum de produits kit composables. Basé sur le stock physique disponible des sous-produits.

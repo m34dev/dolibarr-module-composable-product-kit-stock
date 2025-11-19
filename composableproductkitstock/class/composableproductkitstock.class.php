@@ -22,6 +22,8 @@
  * \brief       Business logic for ComposableProductKitStock module
  */
 
+require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
+
 /**
  * Class for ComposableProductKitStock
  */
@@ -29,21 +31,41 @@ class ComposableProductKitStock
 {
 	/**
 	 * @param	Product		$product		Product object
-	 * @return	int							Maximum composable stock for product kit
+	 * @return	int							Maximum composable stock for product kit. If no subproducts -1. If error -2.
 	 */
 	static function getMaxProductKitComposableStock($product)
 	{
-		$error = 0;
+		global $db;
 		$product->get_sousproduits_arbo();
+		$max_composable_subproduct_stock = array();
+		$subproducts_physical_stock = array();
+		$product_required_subproduct_quantities = array();
 		if(empty($product->sousprods)) {
-			$error = -1;
-			return $error;
+			return -1;
 		} else {
-			foreach($product->sousprods as $sub_product_data) {
-				$sub_product_id = $sub_product_data[0];
-				$sub_product = new Product($sub_product_id);
+			dol_syslog('ComposableProductKitStock::getMaxProductKitComposableStock', LOG_DEBUG);
+			dol_syslog('Product has ' . count($product->sousprods) . ' subproducts', LOG_DEBUG);
+			foreach($product->sousprods as $product_ref => $subproducts_data) {
+				dol_syslog('Product Ref: ' . $product_ref, LOG_DEBUG);
+				foreach($subproducts_data as $subproduct_id => $subproduct_data) {
+					dol_syslog('Subproduct ID: ' . $subproduct_id, LOG_DEBUG);
+					$subproduct = new Product($db);
+					$subproduct->fetch($subproduct_id);
+					$subproduct->load_stock('nobatch,novirtual');
+					$subproducts_physical_stock[$subproduct_id] = $subproduct->stock_reel;
+					dol_syslog('Subproduct physical stock: ' . $subproducts_physical_stock[$subproduct_id], LOG_DEBUG);
+					$product_required_subproduct_quantities[$subproduct_id] = $subproduct_data[1];
+					dol_syslog('Product required subproduct ' . $subproduct_id . ' quantity: ' . $product_required_subproduct_quantities[$subproduct_id], LOG_DEBUG);
+				}
 			}
+			foreach($subproducts_physical_stock as $subproduct_id => $subproduct_physical_stock) {
+				$subproduct_composable_stock = floor($subproduct_physical_stock / $product_required_subproduct_quantities[$subproduct_id]);
+				$max_composable_subproduct_stock[$subproduct_id] = $subproduct_composable_stock;
+				dol_syslog('Subproduct ' . $subproduct_id . ' composable stock: ' . $subproduct_composable_stock, LOG_DEBUG);
+			}
+			$max_composable_stock = min($max_composable_subproduct_stock);
+			dol_syslog('Max. composable stock: ' . $max_composable_stock, LOG_DEBUG);
+			return $max_composable_stock;
 		}
-		return 100;
 	}
 }
