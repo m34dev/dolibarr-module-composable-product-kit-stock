@@ -164,9 +164,9 @@ class ActionsComposableProductKitStock extends CommonHookActions
 			} else {
 				return -1;
 			}
-			if($result == -1) {
+			if($result == -1 || $result == -2) {
 				$composable_produt_kit_stock = $langs->trans("NA");
-			} elseif($result == -2) {
+			} elseif($result == -3) {
 				if(in_array('productcompositioncard', $hookmanager->contextarray)) {
 					$composable_produt_kit_stock = $langs->trans("NoSubSubProduct");
 				} else {
