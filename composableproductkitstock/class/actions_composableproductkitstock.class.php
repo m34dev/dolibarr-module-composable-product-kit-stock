@@ -83,14 +83,13 @@ class ActionsComposableProductKitStock extends CommonHookActions
 	function formObjectOptions($parameters, &$object, &$action, $hookmanager) {
 		global $db, $langs;
 		$langs->load("composableproductkitstock@composableproductkitstock");
-		$form = new Form($db);
-		$error = 0;
 		$composable_produt_kit_stock_label = '';
 		$composable_produt_kit_stock = ComposableProductKitStock::getMaxProductKitComposableStock($object->id);
-		if($composable_produt_kit_stock == -1) {
+		if($composable_produt_kit_stock == -1 || $composable_produt_kit_stock == -2) {
 			$this->results = array('value' => $composable_produt_kit_stock);
 			$this->resprints = $composable_produt_kit_stock_label;
 		} else {
+			$form = new Form($db);
 			$composable_produt_kit_stock_label = (string)$composable_produt_kit_stock;
 			$this->results = array('value' => $composable_produt_kit_stock);
 			$this->resprints = '<tr><td>'.$form->textwithpicto($langs->trans("ComposableProductKitStockLevel"), $langs->trans("ComposableProductKitStockLevelTip")).'</td><td>'.$composable_produt_kit_stock_label.'</td></tr>';
@@ -108,8 +107,12 @@ class ActionsComposableProductKitStock extends CommonHookActions
 	 * @return	int								< 0 on error, 0 on success, 1 to replace standard code
 	 */
 	function printFieldListOption($parameters, &$object, &$action, $hookmanager) {
-		$this->resprints = '<td class="liste_titre">&nbsp</td>';
-		return 0;
+		if(in_array('productservicelist', $hookmanager->contextarray)) {
+			$this->resprints = '<td class="liste_titre">&nbsp</td>';
+			return 0;
+		} else {
+			return 0;
+		}
 	}
 
 	/**
@@ -124,9 +127,16 @@ class ActionsComposableProductKitStock extends CommonHookActions
 	function printFieldListTitle($parameters, &$object, &$action, $hookmanager) {
 		global $langs;
 		$langs->load("composableproductkitstock@composableproductkitstock");
-		$this->resprints = getTitleFieldOfList($langs->trans("ComposableProductKitStockLevelShort"), 0, $_SERVER["PHP_SELF"], "", "", $parameters['param'], '', $parameters['sortfield'], $parameters['sortorder'], 'center nowrap ');
-		$parameters['totalarray']['nbfield']++;
-		return 0;
+		if(in_array('productservicelist', $hookmanager->contextarray)) {
+			$this->resprints = getTitleFieldOfList($langs->trans("ComposableProductKitStockLevelShort"), 0, $_SERVER["PHP_SELF"], "", "", $parameters['param'], '', $parameters['sortfield'], $parameters['sortorder'], 'center nowrap ');
+			$parameters['totalarray']['nbfield']++;
+			return 0;
+		} elseif(in_array('productcompositioncard', $hookmanager->contextarray)) {
+			$this->resprints = '<th class="center">' . $langs->trans("ComposableProductKitStockLevelSubProduct") . '</th>';
+			return 0;
+		} else {
+			return 0;
+		}
 	}
 	
 	/**
@@ -141,19 +151,33 @@ class ActionsComposableProductKitStock extends CommonHookActions
 	function printFieldListValue($parameters, &$object, &$action, $hookmanager) {
 		global $langs;
 		$langs->load("composableproductkitstock@composableproductkitstock");
-		if(empty($parameters['obj'])) {
-			return -1;
-		} else {
-			$product_object = $parameters['obj'];
-			$result = ComposableProductKitStock::getMaxProductKitComposableStock($product_object->rowid);
+		if(in_array('productservicelist', $hookmanager->contextarray) || in_array('productcompositioncard', $hookmanager->contextarray)) {
+			if(in_array('productservicelist', $hookmanager->contextarray)) {
+				if(empty($parameters['obj'])) {
+					return -1;
+				}
+				$product_object = $parameters['obj'];
+				$result = ComposableProductKitStock::getMaxProductKitComposableStock($product_object->rowid);
+			} elseif(in_array('productcompositioncard', $hookmanager->contextarray)) {
+				$product_object = $object;
+				$result = ComposableProductKitStock::getMaxProductKitComposableStock($product_object->id);
+			} else {
+				return -1;
+			}
 			if($result == -1) {
 				$composable_produt_kit_stock = $langs->trans("NA");
 			} elseif($result == -2) {
-				$composable_produt_kit_stock = $langs->trans("NoSubProduct");;
+				if(in_array('productcompositioncard', $hookmanager->contextarray)) {
+					$composable_produt_kit_stock = $langs->trans("NoSubSubProduct");
+				} else {
+					$composable_produt_kit_stock = $langs->trans("NoSubProduct");
+				}
 			} else {
-				$composable_produt_kit_stock = (string)$result;
+				$composable_produt_kit_stock = empty((string)$result) ? 'error' : (string)$result;
 			}
 			$this->resprints = '<td class="center nowraponall">' . $composable_produt_kit_stock . '</td>';
+			return 0;
+		} else {
 			return 0;
 		}
 	}
