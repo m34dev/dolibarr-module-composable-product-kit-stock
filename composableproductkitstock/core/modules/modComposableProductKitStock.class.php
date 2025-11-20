@@ -75,7 +75,7 @@ class modComposableProductKitStock extends DolibarrModules
 		// Possible values for version are: 'development', 'experimental', 'dolibarr', 'dolibarr_deprecated', 'experimental_deprecated' or a version string like 'x.y.z'
 		$this->version = '1.0.0';
 		// Url to the file with your last numberversion of this module
-		$this->url_last_version = 'https://lab.frogg.it/dolibarr/composableproductkitstock/-/blob/main/versionmodule.txt';
+		$this->url_last_version = 'https://lab.frogg.it/dolibarr/composableproductkitstock/-/raw/main/versionmodule.txt?ref_type=heads&inline=false';
 
 		// Key used in llx_const table to save module status enabled/disabled (where COMPOSABLEPRODUCTKITSTOCK is value of property name of module in uppercase)
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);

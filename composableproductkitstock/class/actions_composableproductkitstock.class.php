@@ -85,7 +85,7 @@ class ActionsComposableProductKitStock extends CommonHookActions
 		$langs->load("composableproductkitstock@composableproductkitstock");
 		$composable_produt_kit_stock_label = '';
 		$composable_produt_kit_stock = ComposableProductKitStock::getMaxProductKitComposableStock($object->id);
-		if($composable_produt_kit_stock == -1 || $composable_produt_kit_stock == -2) {
+		if($composable_produt_kit_stock == -1 || $composable_produt_kit_stock == -2 || $composable_produt_kit_stock == -3) {
 			$this->results = array('value' => $composable_produt_kit_stock);
 			$this->resprints = $composable_produt_kit_stock_label;
 		} else {
