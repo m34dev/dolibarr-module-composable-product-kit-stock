@@ -94,6 +94,13 @@ class ActionsComposableProductKitStock extends CommonHookActions
 			$this->results = array('value' => $composable_produt_kit_stock);
 			$this->resprints = '<tr><td>'.$form->textwithpicto($langs->trans("ComposableProductKitStockLevel"), $langs->trans("ComposableProductKitStockLevelTip")).'</td><td>'.$composable_produt_kit_stock_label.'</td></tr>';
 		}
+		$warehouses_product_kit_composable_stock = ComposableProductKitStock::getWarehousesProductKitComposableStock($object->id);
+		if(is_array($warehouses_product_kit_composable_stock) && !empty($warehouses_product_kit_composable_stock)) {
+			$this->resprints .= '<tr><td>'.$langs->trans("WarehousesComposableProductKitStockLevel").'</td><td></td></tr>';
+			foreach($warehouses_product_kit_composable_stock as $warehouse_ref => $warehouse_composable_stock) {
+				$this->resprints .= '<tr><td style="padding-left:2em;">'.$warehouse_ref.'</td><td>'.$warehouse_composable_stock.'</td></tr>';
+			}
+		}
 		return 0;
 	}
 	

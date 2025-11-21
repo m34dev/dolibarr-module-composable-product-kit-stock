@@ -106,7 +106,7 @@ if (!$user->admin) {
  * Actions
  */
 
-
+// TODO: Add option to show warehouse detail
 
 /*
  * View

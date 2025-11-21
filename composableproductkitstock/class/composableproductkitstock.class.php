@@ -29,15 +29,21 @@ require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 class ComposableProductKitStock
 {
 	/**
-	 * @param	string		$product_id		Product ID
-	 * @return	int							Maximum composable stock for product kit. If no product for ID -1. If the product is a service -2. If no subproducts -3.
+	 * Get maximum composable stock for a product kit
+	 *
+	 * If warehouse ID is provided, composable stock is calculated for that warehouse only.
+	 *
+	 * @param	string $product_id		Product ID
+	 * @return	int						Maximum composable stock for product kit. If no product for ID -1. If the product is a service -2. If no subproducts -3. If no warehouse for ID -4.
 	 */
-	static function getMaxProductKitComposableStock($product_id)
+	static function getMaxProductKitComposableStock(string $product_id, $warehouse_id = null): int
 	{
+		dol_syslog('ComposableProductKitStock::getMaxProductKitComposableStock', LOG_DEBUG);
 		global $db;
 		$product = new Product($db);
 		$result = $product->fetch($product_id);
 		if($result < 1) {
+			dol_syslog('Error loading product ID: ' . $product_id, LOG_ERR);
 			return -1;
 		}
 		$product->get_sousproduits_arbo();
@@ -45,8 +51,10 @@ class ComposableProductKitStock
 		$subproducts_physical_stock = array();
 		$product_required_subproduct_quantities = array();
 		if($product->type == Product::TYPE_SERVICE) {
+			dol_syslog('Product is a service', LOG_DEBUG);
 			return -2;
 		} elseif(empty($product->sousprods)) {
+			dol_syslog('Product has no subproducts', LOG_DEBUG);
 			return -3;
 		} else {
 			dol_syslog('ComposableProductKitStock::getMaxProductKitComposableStock', LOG_DEBUG);
@@ -56,12 +64,31 @@ class ComposableProductKitStock
 				foreach($subproducts_data as $subproduct_id => $subproduct_data) {
 					dol_syslog('Subproduct ID: ' . $subproduct_id, LOG_DEBUG);
 					$subproduct = new Product($db);
-					$subproduct->fetch($subproduct_id);
+					$result = $subproduct->fetch($subproduct_id);
+					if($result < 1) {
+						dol_syslog('Error loading subproduct ID: ' . $subproduct_id, LOG_ERR);
+						return -1;
+					}
 					if($subproduct->type == Product::TYPE_SERVICE) {
 						dol_syslog('Subproduct is a service', LOG_DEBUG);
 					} else {
-						$subproduct->load_stock('nobatch,novirtual');
-						$subproducts_physical_stock[$subproduct_id] = $subproduct->stock_reel;
+						$result = $subproduct->load_stock('nobatch,novirtual');
+						if($result < 1) {
+							dol_syslog('Error loading stock, subproduct ID: ' . $subproduct_id, LOG_ERR);
+						}
+						if(is_null($warehouse_id)) {
+							$subproducts_physical_stock[$subproduct_id] = $subproduct->stock_reel;
+						} else {
+							$warehouse = new Entrepot($db);
+							$result = $warehouse->fetch($warehouse_id);
+							if($result < 1) {
+								dol_syslog('Error loading warehouse ID: ' . $warehouse_id, LOG_ERR);
+								return -4;
+							} else {
+								dol_syslog('Warehouse ID: ' . $warehouse_id . ' ref: ' . $warehouse->ref, LOG_DEBUG);
+								$subproducts_physical_stock[$subproduct_id] = $subproduct->stock_warehouse[$warehouse_id]->real;
+							}
+						}
 						dol_syslog('Subproduct physical stock: ' . $subproducts_physical_stock[$subproduct_id], LOG_DEBUG);
 						$product_required_subproduct_quantities[$subproduct_id] = $subproduct_data[1];
 						dol_syslog('Product required subproduct ' . $subproduct_id . ' quantity: ' . $product_required_subproduct_quantities[$subproduct_id], LOG_DEBUG);
@@ -77,5 +104,38 @@ class ComposableProductKitStock
 			dol_syslog('Max. composable stock: ' . $max_composable_stock, LOG_DEBUG);
 			return $max_composable_stock;
 		}
+	}
+	
+	static function getWarehousesProductKitComposableStock(string $product_id): int|array
+	{
+		dol_syslog('ComposableProductKitStock::getWarehousesProductKitComposableStock', LOG_DEBUG);
+		global $db;
+		$product = new Product($db);
+		$result = $product->fetch($product_id);
+		if($result < 1) {
+			dol_syslog('Error loading product ID: ' . $product_id, LOG_ERR);
+			return -1;
+		}
+		$warehouses_product_kit_composable_stock = array();
+		$warehouse = new Entrepot($db);
+		$warehouses = $warehouse->list_array();
+		foreach($warehouses as $warehouse_id => $warehouse_ref) {
+			dol_syslog('Warehouse ID: ' . $warehouse_id, LOG_DEBUG);
+			$warehouse_product_kit_composable_stock = ComposableProductKitStock::getMaxProductKitComposableStock($product_id, $warehouse_id);
+			if($warehouse_product_kit_composable_stock == -1) {
+				return -1;
+			} elseif($warehouse_product_kit_composable_stock == -2) {
+				return -2;
+			} elseif($warehouse_product_kit_composable_stock == -3) {
+				return -3;
+			} elseif($warehouse_product_kit_composable_stock == -4) {
+				return -4;
+			} elseif($warehouse_product_kit_composable_stock == 0) {
+				continue;
+			} else {
+				$warehouses_product_kit_composable_stock[$warehouse_ref] = $warehouse_product_kit_composable_stock;
+			}
+		}
+		return $warehouses_product_kit_composable_stock;
 	}
 }
