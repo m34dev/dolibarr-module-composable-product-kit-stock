@@ -29,16 +29,17 @@ require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 class ComposableProductKitStock
 {
 	/**
-	 * Get maximum composable stock for a product kit
+	 * Get composable stock for a product kit
 	 *
 	 * If warehouse ID is provided, composable stock is calculated for that warehouse only.
 	 *
-	 * @param	string $product_id		Product ID
-	 * @return	int						Maximum composable stock for product kit. If no product for ID -1. If the product is a service -2. If no subproducts -3. If no warehouse for ID -4.
+	 * @param	string			$product_id			Product ID
+	 * @param	string|null		$warehouse_id		Warehouse ID
+	 * @return	int									Maximum composable stock for product kit. If no product for ID -1. If the product is a service -2. If no subproducts -3. If no warehouse for ID -4.
 	 */
-	static function getMaxProductKitComposableStock(string $product_id, $warehouse_id = null): int
+	static function getProductKitComposableStock(string $product_id, string|null $warehouse_id = null): int
 	{
-		dol_syslog('ComposableProductKitStock::getMaxProductKitComposableStock', LOG_DEBUG);
+		dol_syslog('ComposableProductKitStock::getProductKitComposableStock', LOG_DEBUG);
 		global $db;
 		$product = new Product($db);
 		$result = $product->fetch($product_id);
@@ -57,7 +58,7 @@ class ComposableProductKitStock
 			dol_syslog('Product has no subproducts', LOG_DEBUG);
 			return -3;
 		} else {
-			dol_syslog('ComposableProductKitStock::getMaxProductKitComposableStock', LOG_DEBUG);
+			dol_syslog('ComposableProductKitStock::getProductKitComposableStock', LOG_DEBUG);
 			dol_syslog('Product has ' . count($product->sousprods) . ' subproducts', LOG_DEBUG);
 			foreach($product->sousprods as $product_ref => $subproducts_data) {
 				dol_syslog('Product Ref: ' . $product_ref, LOG_DEBUG);
@@ -106,6 +107,12 @@ class ComposableProductKitStock
 		}
 	}
 	
+	/**
+	 * Get product kit composable stock per warehouse
+	 *
+	 * @param	string		$product_id				Product ID
+	 * @return	int|array{ref:string,stock:int}		Composable stock for product kit per warehouse. If no product for ID -1. If the product is a service -2. If no subproducts -3. If no warehouse for ID -4.
+	 */
 	static function getWarehousesProductKitComposableStock(string $product_id): int|array
 	{
 		dol_syslog('ComposableProductKitStock::getWarehousesProductKitComposableStock', LOG_DEBUG);
@@ -121,7 +128,7 @@ class ComposableProductKitStock
 		$warehouses = $warehouse->list_array();
 		foreach($warehouses as $warehouse_id => $warehouse_ref) {
 			dol_syslog('Warehouse ID: ' . $warehouse_id, LOG_DEBUG);
-			$warehouse_product_kit_composable_stock = ComposableProductKitStock::getMaxProductKitComposableStock($product_id, $warehouse_id);
+			$warehouse_product_kit_composable_stock = ComposableProductKitStock::getProductKitComposableStock($product_id, $warehouse_id);
 			if($warehouse_product_kit_composable_stock == -1) {
 				return -1;
 			} elseif($warehouse_product_kit_composable_stock == -2) {

@@ -84,7 +84,7 @@ class ActionsComposableProductKitStock extends CommonHookActions
 		global $db, $langs;
 		$langs->load("composableproductkitstock@composableproductkitstock");
 		$composable_produt_kit_stock_label = '';
-		$composable_produt_kit_stock = ComposableProductKitStock::getMaxProductKitComposableStock($object->id);
+		$composable_produt_kit_stock = ComposableProductKitStock::getProductKitComposableStock($object->id);
 		if($composable_produt_kit_stock == -1 || $composable_produt_kit_stock == -2 || $composable_produt_kit_stock == -3) {
 			$this->results = array('value' => $composable_produt_kit_stock);
 			$this->resprints = $composable_produt_kit_stock_label;
@@ -164,10 +164,10 @@ class ActionsComposableProductKitStock extends CommonHookActions
 					return -1;
 				}
 				$product_object = $parameters['obj'];
-				$result = ComposableProductKitStock::getMaxProductKitComposableStock($product_object->rowid);
+				$result = ComposableProductKitStock::getProductKitComposableStock($product_object->rowid);
 			} elseif(in_array('productcompositioncard', $hookmanager->contextarray)) {
 				$product_object = $object;
-				$result = ComposableProductKitStock::getMaxProductKitComposableStock($product_object->id);
+				$result = ComposableProductKitStock::getProductKitComposableStock($product_object->id);
 			} else {
 				return -1;
 			}

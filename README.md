@@ -6,6 +6,7 @@ Get product kit composable stock. A product's composable stock is a virtual stoc
 
 - See composable product kit stock on product card and product stock card
 - See composable product kit stock on product list
+- See composable product kit stock per warehouse
 - Dedicated API route to get composable product kit stock
 
 ## Module installation

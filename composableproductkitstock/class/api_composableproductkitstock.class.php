@@ -77,7 +77,7 @@ class ComposableProductKitStockApi extends DolibarrApi
 			throw new RestException(404, 'Product not found');
 		}
 		$product_id = $product->id;
-		$result = ComposableProductKitStock::getMaxProductKitComposableStock($product_id);
+		$result = ComposableProductKitStock::getProductKitComposableStock($product_id);
 		if ($result == -1) {
 			throw new RestException(404, 'Product not found');
 		}
