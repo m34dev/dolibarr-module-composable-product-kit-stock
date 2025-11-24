@@ -83,23 +83,25 @@ class ActionsComposableProductKitStock extends CommonHookActions
 	function formObjectOptions($parameters, &$object, &$action, $hookmanager) {
 		global $db, $langs;
 		$langs->load("composableproductkitstock@composableproductkitstock");
-		$composable_produt_kit_stock_label = '';
-		$composable_produt_kit_stock = ComposableProductKitStock::getProductKitComposableStock($object->id);
-		if($composable_produt_kit_stock == -1 || $composable_produt_kit_stock == -2 || $composable_produt_kit_stock == -3) {
-			$this->results = array('value' => $composable_produt_kit_stock);
-			$this->resprints = $composable_produt_kit_stock_label;
-		} else {
-			$form = new Form($db);
-			$composable_produt_kit_stock_label = (string)$composable_produt_kit_stock;
-			$this->results = array('value' => $composable_produt_kit_stock);
-			$this->resprints = '<tr><td>'.$form->textwithpicto($langs->trans("ComposableProductKitStockLevel"), $langs->trans("ComposableProductKitStockLevelTip")).'</td><td>'.$composable_produt_kit_stock_label.'</td></tr>';
-		}
-		if(getDolGlobalString('COMPOSABLEPRODUCTKITSTOCK_WAREHOUSEDETAIL')) {
-			$warehouses_product_kit_composable_stock = ComposableProductKitStock::getWarehousesProductKitComposableStock($object->id);
-			if(is_array($warehouses_product_kit_composable_stock) && !empty($warehouses_product_kit_composable_stock)) {
-				$this->resprints .= '<tr><td>'.$langs->trans("WarehousesComposableProductKitStockLevel").'</td><td></td></tr>';
-				foreach($warehouses_product_kit_composable_stock as $warehouse_ref => $warehouse_composable_stock) {
-					$this->resprints .= '<tr><td style="padding-left:2em;">'.$warehouse_ref.'</td><td>'.$warehouse_composable_stock.'</td></tr>';
+		if($action == 'view' || $action == '') {
+			$composable_produt_kit_stock_label = '';
+			$composable_produt_kit_stock = ComposableProductKitStock::getProductKitComposableStock($object->id);
+			if($composable_produt_kit_stock == -1 || $composable_produt_kit_stock == -2 || $composable_produt_kit_stock == -3) {
+				$this->results = array('value' => $composable_produt_kit_stock);
+				$this->resprints = $composable_produt_kit_stock_label;
+			} else {
+				$form = new Form($db);
+				$composable_produt_kit_stock_label = (string)$composable_produt_kit_stock;
+				$this->results = array('value' => $composable_produt_kit_stock);
+				$this->resprints = '<tr><td>'.$form->textwithpicto($langs->trans("ComposableProductKitStockLevel"), $langs->trans("ComposableProductKitStockLevelTip")).'</td><td>'.$composable_produt_kit_stock_label.'</td></tr>';
+			}
+			if(getDolGlobalString('COMPOSABLEPRODUCTKITSTOCK_WAREHOUSEDETAIL')) {
+				$warehouses_product_kit_composable_stock = ComposableProductKitStock::getWarehousesProductKitComposableStock($object->id);
+				if(is_array($warehouses_product_kit_composable_stock) && !empty($warehouses_product_kit_composable_stock)) {
+					$this->resprints .= '<tr><td>'.$langs->trans("WarehousesComposableProductKitStockLevel").'</td><td></td></tr>';
+					foreach($warehouses_product_kit_composable_stock as $warehouse_ref => $warehouse_composable_stock) {
+						$this->resprints .= '<tr><td style="padding-left:2em;">'.$warehouse_ref.'</td><td>'.$warehouse_composable_stock.'</td></tr>';
+					}
 				}
 			}
 		}
