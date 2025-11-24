@@ -102,11 +102,17 @@ if (!$user->admin) {
 
 // Enter here all parameters in your setup page
 
+$formSetup->newItem('COMPOSABLEPRODUCTKITSTOCK_WAREHOUSEDETAIL')->setAsYesNo();
+
+$setupnotempty += count($formSetup->items);
+
 /*
  * Actions
  */
 
-// TODO: Add option to show warehouse detail
+include DOL_DOCUMENT_ROOT.'/core/actions_setmoduleoptions.inc.php';
+
+$action = 'edit';
 
 /*
  * View
@@ -129,6 +135,13 @@ $head = composableproductkitstockAdminPrepareHead();
 print dol_get_fiche_head($head, 'Setup', $langs->trans($title), -1, "setup");
 
 // Setup page goes here
+
+echo '<span class="opacitymedium">'.$langs->trans("ComposableProductKitStockSetupPage").'</span><br><br>';
+
+if (!empty($formSetup->items)) {
+	print $formSetup->generateOutput(true);
+	print '<br>';
+}
 
 if (empty($setupnotempty)) {
 	print '<br>'.$langs->trans("NothingToSetup");

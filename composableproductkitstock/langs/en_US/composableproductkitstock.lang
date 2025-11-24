@@ -10,7 +10,7 @@ ModuleComposableProductKitStockDesc = Calculate composable stock for product kit
 #
 ComposableProductKitStockSetup = Composable Product Kit Stock
 Settings = Settings
-ComposableProductKitStockSetupPage = Configuration
+ComposableProductKitStockSetupPage = Options
 ComposableProductKitStockLevelShort = Composable stock
 ComposableProductKitStockLevel = Total composable product kit stock
 ComposableProductKitStockLevelTip = Maxmimum number of composable kit products. Based on available physical stock of sub products.
@@ -19,3 +19,4 @@ NoSubProduct = No subproduct
 NoSubSubProduct = No sub subproduct
 NA = N/A
 WarehousesComposableProductKitStockLevel = Composable stock per warehouse:
+COMPOSABLEPRODUCTKITSTOCK_WAREHOUSEDETAIL = Show composable stock per warehouse
