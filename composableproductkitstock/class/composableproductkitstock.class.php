@@ -87,10 +87,14 @@ class ComposableProductKitStock
 								return -4;
 							} else {
 								dol_syslog('Warehouse ID: ' . $warehouse_id . ' ref: ' . $warehouse->ref, LOG_DEBUG);
-								$subproducts_physical_stock[$subproduct_id] = $subproduct->stock_warehouse[$warehouse_id]->real;
+								if(!isset($subproduct->stock_warehouse[$warehouse_id])) {
+									dol_syslog('Subproduct ID: ' . $subproduct_id . ' does not have stock in warehouse ID: ' . $warehouse_id, LOG_DEBUG);
+								} else {
+									$subproducts_physical_stock[$subproduct_id] = $subproduct->stock_warehouse[$warehouse_id]->real;
+									dol_syslog('Subproduct physical stock: ' . $subproducts_physical_stock[$subproduct_id], LOG_DEBUG);
+								}
 							}
 						}
-						dol_syslog('Subproduct physical stock: ' . $subproducts_physical_stock[$subproduct_id], LOG_DEBUG);
 						$product_required_subproduct_quantities[$subproduct_id] = $subproduct_data[1];
 						dol_syslog('Product required subproduct ' . $subproduct_id . ' quantity: ' . $product_required_subproduct_quantities[$subproduct_id], LOG_DEBUG);
 					}
