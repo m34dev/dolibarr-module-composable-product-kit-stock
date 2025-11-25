@@ -105,9 +105,14 @@ class ComposableProductKitStock
 				$max_composable_subproduct_stock[$subproduct_id] = $subproduct_composable_stock;
 				dol_syslog('Subproduct ' . $subproduct_id . ' composable stock: ' . $subproduct_composable_stock, LOG_DEBUG);
 			}
-			$max_composable_stock = min($max_composable_subproduct_stock);
-			dol_syslog('Max. composable stock: ' . $max_composable_stock, LOG_DEBUG);
-			return $max_composable_stock;
+			if(empty($max_composable_subproduct_stock)) {
+				dol_syslog('No subproducts stock', LOG_DEBUG);
+				return -3;
+			} else {
+				$max_composable_stock = min($max_composable_subproduct_stock);
+				dol_syslog('Max. composable stock: ' . $max_composable_stock, LOG_DEBUG);
+				return $max_composable_stock;
+			}
 		}
 	}
 	
