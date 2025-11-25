@@ -88,6 +88,7 @@ class ComposableProductKitStock
 							} else {
 								dol_syslog('Warehouse ID: ' . $warehouse_id . ' ref: ' . $warehouse->ref, LOG_DEBUG);
 								if(!isset($subproduct->stock_warehouse[$warehouse_id])) {
+									$subproducts_physical_stock[$subproduct_id] = 0;
 									dol_syslog('Subproduct ID: ' . $subproduct_id . ' does not have stock in warehouse ID: ' . $warehouse_id, LOG_DEBUG);
 								} else {
 									$subproducts_physical_stock[$subproduct_id] = $subproduct->stock_warehouse[$warehouse_id]->real;
@@ -105,14 +106,9 @@ class ComposableProductKitStock
 				$max_composable_subproduct_stock[$subproduct_id] = $subproduct_composable_stock;
 				dol_syslog('Subproduct ID: ' . $subproduct_id . ' composable stock: ' . $subproduct_composable_stock, LOG_DEBUG);
 			}
-			if(empty($max_composable_subproduct_stock)) {
-				dol_syslog('No subproducts stock', LOG_DEBUG);
-				return 0;
-			} else {
-				$max_composable_stock = min($max_composable_subproduct_stock);
-				dol_syslog('Max. composable stock: ' . $max_composable_stock, LOG_DEBUG);
-				return $max_composable_stock;
-			}
+			$max_composable_stock = min($max_composable_subproduct_stock);
+			dol_syslog('Max. composable stock: ' . $max_composable_stock, LOG_DEBUG);
+			return $max_composable_stock;
 		}
 	}
 	
