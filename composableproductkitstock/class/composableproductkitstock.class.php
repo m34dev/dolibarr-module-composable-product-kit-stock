@@ -103,11 +103,11 @@ class ComposableProductKitStock
 			foreach($subproducts_physical_stock as $subproduct_id => $subproduct_physical_stock) {
 				$subproduct_composable_stock = floor($subproduct_physical_stock / $product_required_subproduct_quantities[$subproduct_id]);
 				$max_composable_subproduct_stock[$subproduct_id] = $subproduct_composable_stock;
-				dol_syslog('Subproduct ' . $subproduct_id . ' composable stock: ' . $subproduct_composable_stock, LOG_DEBUG);
+				dol_syslog('Subproduct ID: ' . $subproduct_id . ' composable stock: ' . $subproduct_composable_stock, LOG_DEBUG);
 			}
 			if(empty($max_composable_subproduct_stock)) {
 				dol_syslog('No subproducts stock', LOG_DEBUG);
-				return -3;
+				return 0;
 			} else {
 				$max_composable_stock = min($max_composable_subproduct_stock);
 				dol_syslog('Max. composable stock: ' . $max_composable_stock, LOG_DEBUG);
