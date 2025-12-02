@@ -38,9 +38,9 @@ class modComposableProductKitStock extends DolibarrModules
 	 */
 	public function __construct($db)
 	{
-		global $conf, $langs;
+		parent::__construct($db);
 
-		$this->db = $db;
+		global $conf, $langs;
 
 		// Id for module (must be unique).
 		// Use here a free id (See in Home -> System information -> Dolibarr for list of used modules id).
