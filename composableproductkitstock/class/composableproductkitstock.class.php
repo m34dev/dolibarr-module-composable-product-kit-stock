@@ -37,7 +37,7 @@ class ComposableProductKitStock
 	 * @param	string|null		$warehouse_id		Warehouse ID
 	 * @return	int									Maximum composable stock for product kit. If no product for ID -1. If the product is a service -2. If no subproducts -3. If no warehouse for ID -4.
 	 */
-	static function getProductKitComposableStock(string $product_id, string|null $warehouse_id = null): int
+	static function getProductKitComposableStock(string $product_id, ?string $warehouse_id = null): int
 	{
 		dol_syslog('ComposableProductKitStock::getProductKitComposableStock', LOG_DEBUG);
 		global $db;
@@ -118,7 +118,7 @@ class ComposableProductKitStock
 	 * @param	string		$product_id				Product ID
 	 * @return	int|array{ref:string,stock:int}		Composable stock for product kit per warehouse. If no product for ID -1. If the product is a service -2. If no subproducts -3. If no warehouse for ID -4.
 	 */
-	static function getWarehousesProductKitComposableStock(string $product_id): int|array
+	static function getWarehousesProductKitComposableStock(string $product_id)
 	{
 		dol_syslog('ComposableProductKitStock::getWarehousesProductKitComposableStock', LOG_DEBUG);
 		global $db;
