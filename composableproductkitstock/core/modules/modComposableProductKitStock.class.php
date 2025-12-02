@@ -73,7 +73,7 @@ class modComposableProductKitStock extends DolibarrModules
 		$this->editor_squarred_logo = 'logoSquareM34D.png@composableproductkitstock';					// Must be image filename into the module/img directory followed with @modulename. Example: 'myimage.png@composableproductkitstock'
 
 		// Possible values for version are: 'development', 'experimental', 'dolibarr', 'dolibarr_deprecated', 'experimental_deprecated' or a version string like 'x.y.z'
-		$this->version = '1.1.2';
+		$this->version = '1.1.3';
 		// Url to the file with your last numberversion of this module
 		$this->url_last_version = 'https://lab.frogg.it/dolibarr/composableproductkitstock/-/raw/main/versionmodule.txt?ref_type=heads&inline=false';
 
@@ -157,7 +157,7 @@ class modComposableProductKitStock extends DolibarrModules
 		$this->langfiles = array("composableproductkitstock@composableproductkitstock");
 
 		// Prerequisites
-		$this->phpmin = array(8, 1); // Minimum version of PHP required by module
+		$this->phpmin = array(7, 4); // Minimum version of PHP required by module
 		// $this->phpmax = array(8, 0); // Maximum version of PHP required by module
 		$this->need_dolibarr_version = array(18, 0); // Minimum version of Dolibarr required by module
 		// $this->max_dolibarr_version = array(19, -3); // Maximum version of Dolibarr required by module
