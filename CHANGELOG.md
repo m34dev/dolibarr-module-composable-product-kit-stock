@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - PHP 7.4 compatibility
+- Dolibarr v18 compatibility
 
 ## [1.1.2] - 2025-11-25
 

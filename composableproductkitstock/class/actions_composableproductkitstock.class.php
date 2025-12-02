@@ -21,13 +21,12 @@
  * \brief   Hooks
  */
 
-require_once DOL_DOCUMENT_ROOT.'/core/class/commonhookactions.class.php';
 require_once "composableproductkitstock.class.php";
 
 /**
  * Class ActionsComposableProductKitStock
  */
-class ActionsComposableProductKitStock extends CommonHookActions
+class ActionsComposableProductKitStock
 {
 	/**
 	 * @var DoliDB Database handler.
