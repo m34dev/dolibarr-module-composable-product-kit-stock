@@ -77,7 +77,7 @@ class ComposableProductKitStock
 						if($result < 1) {
 							dol_syslog('Error loading stock, subproduct ID: ' . $subproduct_id, LOG_ERR);
 						}
-						if(is_null($warehouse_id)) {
+						if(is_null($warehouse_id)) { // TODO: Manage negative stock values
 							$subproducts_physical_stock[$subproduct_id] = $subproduct->stock_reel;
 						} else {
 							$warehouse = new Entrepot($db);
