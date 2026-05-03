@@ -1,0 +1,47 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows manual triggering of workflow
+
+jobs:
+  package-job:
+    if: startsWith(github.ref, 'refs/tags/') # Execute for tags only
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q zip curl
+
+      - name: Packaging composableproductkitstock module
+        run: |
+          mkdir artifacts
+          cp LICENSE.md composableproductkitstock/LICENSE.md
+          cp README.md composableproductkitstock/README.md
+          cp CHANGELOG.md composableproductkitstock/Changelog.md
+          zip -r "./artifacts/module_composableproductkitstock-${GITHUB_REF_NAME}.zip" ./composableproductkitstock/
+
+      - name: Upload Artifact to GitHub
+        uses: actions/upload-artifact@v3
+        with:
+          name: module_composableproductkitstock-${{ github.ref_name }}
+          path: artifacts/
+
+  release-job:
+    if: startsWith(github.ref, 'refs/tags/') # Execute for tags only
+    needs: package-job # Depends on packaging job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Release module
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/module_composableproductkitstock-${{ github.ref_name }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Token provided by GitHub
