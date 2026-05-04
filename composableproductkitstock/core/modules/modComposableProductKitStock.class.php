@@ -423,6 +423,72 @@ class modComposableProductKitStock extends DolibarrModules
 		$r++; */
 		/* END MODULEBUILDER EXPORT MYOBJECT */
 
+		// Export: Product Kit Stock
+		$langs->load("composableproductkitstock@composableproductkitstock");
+		$this->export_code[$r] = $this->rights_class.'_'.$r;
+		$this->export_label[$r] = 'ExportDataset_composableproductkitstock_0';
+		$this->export_icon[$r] = 'product';
+		$this->export_permission[$r] = array(array("stock", "lire"));
+		$this->export_fields_array[$r] = array(
+			'p.ref'                                                                                          => 'Ref',
+			'p.label'                                                                                        => 'Label',
+			'COALESCE(rstock.real_stock, 0)'                                                                 => 'RealStock',
+			'(COALESCE(rstock.real_stock, 0) + COALESCE(supd.spd, 0) - COALESCE(custd.cpd, 0))'             => 'VirtualStock',
+			'COALESCE(CAST(composable.composable_stock AS CHAR), \'N/A\')'                                   => 'ComposableStock',
+		);
+		$this->export_TypeFields_array[$r] = array(
+			'p.ref'                                                                                          => 'Text',
+			'p.label'                                                                                        => 'Text',
+			'COALESCE(rstock.real_stock, 0)'                                                                 => 'Numeric',
+			'(COALESCE(rstock.real_stock, 0) + COALESCE(supd.spd, 0) - COALESCE(custd.cpd, 0))'             => 'Numeric',
+			'COALESCE(CAST(composable.composable_stock AS CHAR), \'N/A\')'                                   => 'Text',
+		);
+		$this->export_entities_array[$r] = array(
+			'p.ref'                                                                                          => 'product',
+			'p.label'                                                                                        => 'product',
+			'COALESCE(rstock.real_stock, 0)'                                                                 => 'product',
+			'(COALESCE(rstock.real_stock, 0) + COALESCE(supd.spd, 0) - COALESCE(custd.cpd, 0))'             => 'product',
+			'COALESCE(CAST(composable.composable_stock AS CHAR), \'N/A\')'                                   => 'product',
+		);
+		$this->export_sql_start[$r] = 'SELECT DISTINCT ';
+		$this->export_sql_end[$r]   = ' FROM '.$this->db->prefix().'product as p';
+		// Real stock: aggregate physical stock across all warehouses
+		$this->export_sql_end[$r]  .= ' LEFT JOIN (';
+		$this->export_sql_end[$r]  .=     'SELECT fk_product, SUM(reel) as real_stock';
+		$this->export_sql_end[$r]  .=     ' FROM '.$this->db->prefix().'product_stock';
+		$this->export_sql_end[$r]  .=     ' GROUP BY fk_product';
+		$this->export_sql_end[$r]  .= ') rstock ON rstock.fk_product = p.rowid';
+		// Virtual stock (+): supplier orders ordered/partially received but not yet in warehouse
+		$this->export_sql_end[$r]  .= ' LEFT JOIN (';
+		$this->export_sql_end[$r]  .=     'SELECT cfd.fk_product, SUM(cfd.qty - COALESCE(cfd.qty_received_reel, 0)) as spd';
+		$this->export_sql_end[$r]  .=     ' FROM '.$this->db->prefix().'commandefournisseurdet cfd';
+		$this->export_sql_end[$r]  .=     ' INNER JOIN '.$this->db->prefix().'commandefournisseur cf ON cf.rowid = cfd.fk_commande AND cf.fk_statut IN (3,4)';
+		$this->export_sql_end[$r]  .=     ' GROUP BY cfd.fk_product';
+		$this->export_sql_end[$r]  .= ') supd ON supd.fk_product = p.rowid';
+		// Virtual stock (-): customer orders validated/in-progress but not yet shipped
+		$this->export_sql_end[$r]  .= ' LEFT JOIN (';
+		$this->export_sql_end[$r]  .=     'SELECT cd.fk_product, SUM(cd.qty - COALESCE(cd.qty_shipped, 0)) as cpd';
+		$this->export_sql_end[$r]  .=     ' FROM '.$this->db->prefix().'commandedet cd';
+		$this->export_sql_end[$r]  .=     ' INNER JOIN '.$this->db->prefix().'commande c ON c.rowid = cd.fk_commande AND c.fk_statut IN (1,2,3)';
+		$this->export_sql_end[$r]  .=     ' GROUP BY cd.fk_product';
+		$this->export_sql_end[$r]  .= ') custd ON custd.fk_product = p.rowid';
+		// Composable stock: MIN(FLOOR(component_physical_stock / required_qty)) across all non-service components
+		$this->export_sql_end[$r]  .= ' LEFT JOIN (';
+		$this->export_sql_end[$r]  .=     'SELECT pa.fk_product_pere as kit_id,';
+		$this->export_sql_end[$r]  .=         ' MIN(FLOOR(COALESCE(sub_real.stock_sum, 0) / GREATEST(pa.qty, 1))) as composable_stock';
+		$this->export_sql_end[$r]  .=     ' FROM '.$this->db->prefix().'product_association pa';
+		$this->export_sql_end[$r]  .=     ' INNER JOIN '.$this->db->prefix().'product sub_p ON sub_p.rowid = pa.fk_product_fils AND sub_p.type != 1';
+		$this->export_sql_end[$r]  .=     ' LEFT JOIN (';
+		$this->export_sql_end[$r]  .=         'SELECT fk_product, SUM(reel) as stock_sum';
+		$this->export_sql_end[$r]  .=         ' FROM '.$this->db->prefix().'product_stock';
+		$this->export_sql_end[$r]  .=         ' GROUP BY fk_product';
+		$this->export_sql_end[$r]  .=     ') sub_real ON sub_real.fk_product = sub_p.rowid';
+		$this->export_sql_end[$r]  .=     ' WHERE pa.qty > 0';
+		$this->export_sql_end[$r]  .=     ' GROUP BY pa.fk_product_pere';
+		$this->export_sql_end[$r]  .= ') composable ON composable.kit_id = p.rowid';
+		$this->export_sql_end[$r]  .= ' WHERE p.entity IN ('.getEntity('product').')';
+		$r++;
+
 		// Imports profiles provided by this module
 		$r = 0;
 		/* BEGIN MODULEBUILDER IMPORT MYOBJECT */
