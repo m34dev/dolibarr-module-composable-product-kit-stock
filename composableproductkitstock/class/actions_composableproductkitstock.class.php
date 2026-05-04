@@ -108,6 +108,29 @@ class ActionsComposableProductKitStock
 	}
 	
 	/**
+	 * Overloading the printFieldPreListTitle function: replacing the parent's function with the one below
+	 *
+	 * @param	array			$parameters		Hook metadatas (context, etc...)
+	 * @param	Product			&$object		The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...)
+	 * @param	string			&$action		Current action (if set). Generally create or edit or null
+	 * @param	HookManager		$hookmanager	Hook manager propagated to allow calling another hook
+	 * @return	int								< 0 on error, 0 on success, 1 to replace standard code
+	 */
+	function printFieldPreListTitle($parameters, &$object, &$action, $hookmanager) {
+		global $langs;
+		if(in_array('productservicelist', $hookmanager->contextarray)) {
+			$langs->load("composableproductkitstock@composableproductkitstock");
+			$this->results['arrayfields']['composablestock'] = array(
+				'label'    => $langs->trans("ComposableProductKitStockLevelShort"),
+				'checked'  => 1,
+				'enabled'  => 1,
+				'position' => 1000,
+			);
+		}
+		return 0;
+	}
+
+	/**
 	 * Overloading the printFieldListOption function: replacing the parent's function with the one below
 	 *
 	 * @param	array			$parameters		Hook metadatas (context, etc...)
@@ -118,6 +141,9 @@ class ActionsComposableProductKitStock
 	 */
 	function printFieldListOption($parameters, &$object, &$action, $hookmanager) {
 		if(in_array('productservicelist', $hookmanager->contextarray)) {
+			if(empty($parameters['arrayfields']['composablestock']['checked'])) {
+				return 0;
+			}
 			$this->resprints = '<td class="liste_titre">&nbsp</td>';
 			return 0;
 		} else {
@@ -138,6 +164,9 @@ class ActionsComposableProductKitStock
 		global $langs;
 		$langs->load("composableproductkitstock@composableproductkitstock");
 		if(in_array('productservicelist', $hookmanager->contextarray)) {
+			if(empty($parameters['arrayfields']['composablestock']['checked'])) {
+				return 0;
+			}
 			$this->resprints = getTitleFieldOfList($langs->trans("ComposableProductKitStockLevelShort"), 0, $_SERVER["PHP_SELF"], "", "", $parameters['param'], '', $parameters['sortfield'], $parameters['sortorder'], 'center nowrap ');
 			$parameters['totalarray']['nbfield']++;
 			return 0;
@@ -162,6 +191,9 @@ class ActionsComposableProductKitStock
 		global $langs;
 		$langs->load("composableproductkitstock@composableproductkitstock");
 		if(in_array('productservicelist', $hookmanager->contextarray) || in_array('productcompositioncard', $hookmanager->contextarray)) {
+			if(in_array('productservicelist', $hookmanager->contextarray) && empty($parameters['arrayfields']['composablestock']['checked'])) {
+				return 0;
+			}
 			if(in_array('productservicelist', $hookmanager->contextarray)) {
 				if(empty($parameters['obj'])) {
 					return -1;
