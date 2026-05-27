@@ -73,9 +73,9 @@ class modComposableProductKitStock extends DolibarrModules
 		$this->editor_squarred_logo = 'logoSquareM34D.png@composableproductkitstock';					// Must be image filename into the module/img directory followed with @modulename. Example: 'myimage.png@composableproductkitstock'
 
 		// Possible values for version are: 'development', 'experimental', 'dolibarr', 'dolibarr_deprecated', 'experimental_deprecated' or a version string like 'x.y.z'
-		$this->version = '1.1.3';
+		$this->version = '1.1.4';
 		// Url to the file with your last numberversion of this module
-		$this->url_last_version = 'https://lab.frogg.it/dolibarr/composableproductkitstock/-/raw/main/versionmodule.txt?ref_type=heads&inline=false';
+		$this->url_last_version = 'https://github.com/m34dev/dolibarr-module-composable-product-kit-stock/raw/refs/heads/main/versionmodule.txt';
 
 		// Key used in llx_const table to save module status enabled/disabled (where COMPOSABLEPRODUCTKITSTOCK is value of property name of module in uppercase)
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
