@@ -53,6 +53,7 @@ echo "\xEF\xBB\xBF";
 $headers = array(
 	$langs->trans('Ref'),
 	$langs->trans('Label'),
+	$langs->trans('Price'),
 	$langs->trans('RealStock'),
 	$langs->trans('VirtualStock'),
 	$langs->trans('ComposableStock'),
@@ -73,6 +74,7 @@ while ($obj = $db->fetch_object($resql)) {
 	$product->fetch((int) $obj->rowid);
 	$product->load_stock('nobatch');
 
+	$price = isset($product->price) ? (float) $product->price : 0.0;
 	$real_stock = isset($product->stock_reel) ? (float) $product->stock_reel : 0.0;
 	$virtual_stock = isset($product->stock_theorique) ? (float) $product->stock_theorique : $real_stock;
 
@@ -82,6 +84,7 @@ while ($obj = $db->fetch_object($resql)) {
 	$row = array(
 		$product->ref,
 		$product->label,
+		(string) $price,
 		(string) $real_stock,
 		(string) $virtual_stock,
 		$composable_display,
