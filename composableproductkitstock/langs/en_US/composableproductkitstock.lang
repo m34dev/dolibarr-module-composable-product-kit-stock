@@ -20,3 +20,11 @@ NoSubSubProduct = No sub subproduct
 NA = N/A
 WarehousesComposableProductKitStockLevel = Composable stock per warehouse:
 COMPOSABLEPRODUCTKITSTOCK_WAREHOUSEDETAIL = Show composable stock per warehouse
+
+#
+# Export
+#
+ExportDataset_composableproductkitstock_0 = Product Kit Stock Export
+RealStock = Real stock
+VirtualStock = Virtual stock
+ComposableStock = Composable stock
