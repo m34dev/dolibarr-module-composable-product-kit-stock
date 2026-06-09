@@ -32,7 +32,6 @@ if (!$res) {
 	die("Include of main fails");
 }
 
-require_once DOL_DOCUMENT_ROOT.'/core/class/html.form.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 
@@ -66,7 +65,6 @@ if (!empty($extrafields->attributes['product']['label'])) {
  * View
  */
 
-$form = new Form($db);
 $formother = new FormOther($db);
 
 llxHeader('', $langs->trans('ExportDataset_composableproductkitstock_0'), '', '', 0, 0, '', '', '', 'mod-composableproductkitstock page-export_options');
@@ -83,11 +81,7 @@ print '<td colspan="2">'.$langs->trans('ExportFilter').'</td>';
 print '</tr>';
 print '<tr class="oddeven">';
 print '<td>'.$langs->trans('Categories').'</td>';
-if (version_compare(DOL_VERSION, '22.0', '>=')) {
-	print '<td>'.$form->selectCategories('product', 'search_category_product_id').'</td>';
-} else {
-	print '<td>'.$formother->select_categories('product', 0, 'search_category_product_id').'</td>';
-}
+print '<td>'.$formother->select_categories('product', 0, 'search_category_product_id').'</td>';
 print '</tr>';
 print '</table>';
 print '</div>';
