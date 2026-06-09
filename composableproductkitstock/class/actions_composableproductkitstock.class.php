@@ -106,21 +106,21 @@ class ActionsComposableProductKitStock
 		}
 		return 0;
 	}
-	
+
 	/**
-	 * Overloading the printFieldPreListTitle function: replacing the parent's function with the one below
+	 * Overloading the doActions function: replacing the parent's function with the one below
 	 *
-	 * @param	array			$parameters		Hook metadatas (context, etc...)
+	 * @param	array			$parameters		Hook metadatas (context, etc...) — contains 'arrayfields' by reference
 	 * @param	Product			&$object		The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...)
 	 * @param	string			&$action		Current action (if set). Generally create or edit or null
 	 * @param	HookManager		$hookmanager	Hook manager propagated to allow calling another hook
 	 * @return	int								< 0 on error, 0 on success, 1 to replace standard code
 	 */
-	function printFieldPreListTitle($parameters, &$object, &$action, $hookmanager) {
+	function doActions($parameters, &$object, &$action, $hookmanager) {
 		global $langs;
-		if(in_array('productservicelist', $hookmanager->contextarray)) {
+		if (in_array('productservicelist', $hookmanager->contextarray)) {
 			$langs->load("composableproductkitstock@composableproductkitstock");
-			$this->results['arrayfields']['composablestock'] = array(
+			$parameters['arrayfields']['composablestock'] = array(
 				'label'    => $langs->trans("ComposableProductKitStockLevelShort"),
 				'checked'  => 1,
 				'enabled'  => 1,
@@ -129,7 +129,7 @@ class ActionsComposableProductKitStock
 		}
 		return 0;
 	}
-
+	
 	/**
 	 * Overloading the printFieldListOption function: replacing the parent's function with the one below
 	 *
