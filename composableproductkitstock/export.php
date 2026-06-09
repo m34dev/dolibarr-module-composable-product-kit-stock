@@ -62,7 +62,7 @@ $column_labels = array(
 );
 
 if (!empty($extrafields->attributes['product']['label'])) {
-	foreach (array_keys($extrafields->attributes['product']['label']) as $key) {
+	foreach ($extrafields->attributes['product']['label'] as $key => $extralabel) {
 		$allowed_columns[] = 'extra_'.$key;
 		$column_labels['extra_'.$key] = $extralabel;
 	}
