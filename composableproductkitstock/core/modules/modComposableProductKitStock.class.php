@@ -391,6 +391,20 @@ class modComposableProductKitStock extends DolibarrModules
 		*/
 		/* END MODULEBUILDER LEFTMENU MYOBJECT */
 
+		$this->menu[$r++] = array(
+			'fk_menu'  => 'fk_mainmenu=tools',
+			'type'     => 'left',
+			'titre'    => 'ExportDataset_composableproductkitstock_0',
+			'mainmenu' => 'tools',
+			'leftmenu' => 'composableproductkitstock_export',
+			'url'      => '/composableproductkitstock/export.php',
+			'langs'    => 'composableproductkitstock@composableproductkitstock',
+			'position' => 100,
+			'enabled'  => 'isModEnabled("composableproductkitstock")',
+			'perms'    => '$user->hasRight("stock", "lire")',
+			'target'   => '',
+			'user'     => 2,
+		);
 
 		// Exports profiles provided by this module
 		$r = 0;
