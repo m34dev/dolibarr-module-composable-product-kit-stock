@@ -77,6 +77,20 @@ print '<input type="hidden" name="token" value="'.newToken().'">';
 print '<div class="div-table-responsive-no-min">';
 print '<table class="noborder centpercent">';
 print '<tr class="liste_titre">';
+print '<td colspan="2">'.$langs->trans('ExportFilter').'</td>';
+print '</tr>';
+print '<tr class="oddeven">';
+print '<td>'.$langs->trans('Categories').'</td>';
+print '<td>'.$form->selectCategories('product', 'search_category_product_id').'</td>';
+print '</tr>';
+print '</table>';
+print '</div>';
+
+print '<br>';
+
+print '<div class="div-table-responsive-no-min">';
+print '<table class="noborder centpercent">';
+print '<tr class="liste_titre">';
 print '<td>'.$langs->trans('ExportSelectColumn').'</td>';
 print '<td class="center">'.$langs->trans('ExportInclude').'</td>';
 print '</tr>';

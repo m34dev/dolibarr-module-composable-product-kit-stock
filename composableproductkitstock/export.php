@@ -62,7 +62,7 @@ $column_labels = array(
 );
 
 if (!empty($extrafields->attributes['product']['label'])) {
-	foreach ($extrafields->attributes['product']['label'] as $key => $extralabel) {
+	foreach (array_keys($extrafields->attributes['product']['label']) as $key) {
 		$allowed_columns[] = 'extra_'.$key;
 		$column_labels['extra_'.$key] = $extralabel;
 	}
@@ -90,9 +90,15 @@ foreach ($selected as $col) {
 }
 echo implode(',', array_map('composableproductkitstock_csvquote', $headers))."\n";
 
-$sql = 'SELECT rowid FROM '.MAIN_DB_PREFIX.'product';
-$sql .= ' WHERE entity IN ('.getEntity('product').')';
-$sql .= ' ORDER BY ref ASC';
+$categoryIds = array_filter(array_map('intval', (array) GETPOST('search_category_product_id', 'array:int')));
+
+$sql = 'SELECT p.rowid FROM '.MAIN_DB_PREFIX.'product as p';
+$sql .= ' WHERE p.entity IN ('.getEntity('product').')';
+if (!empty($categoryIds)) {
+	$sql .= ' AND EXISTS (SELECT ck.fk_product FROM '.MAIN_DB_PREFIX.'categorie_product as ck';
+	$sql .= ' WHERE ck.fk_product = p.rowid AND ck.fk_categorie IN ('.implode(',', $categoryIds).'))';
+}
+$sql .= ' ORDER BY p.ref ASC';
 $resql = $db->query($sql);
 if (!$resql) {
 	print $db->lasterror();
@@ -119,7 +125,7 @@ while ($obj = $db->fetch_object($resql)) {
 	);
 
 	if (!empty($extrafields->attributes['product']['label'])) {
-		foreach ($extrafields->attributes['product']['label'] as $key => $extralabel) {
+		foreach (array_keys($extrafields->attributes['product']['label']) as $key) {
 			$raw = isset($product->array_options['options_'.$key]) ? $product->array_options['options_'.$key] : '';
 			$type = $extrafields->attributes['product']['type'][$key] ?? '';
 			if ($type === 'date') {
@@ -152,5 +158,6 @@ exit;
  */
 function composableproductkitstock_csvquote($value)
 {
-	return '"'.str_replace('"', '""', (string) $value).'"';
+	$value = html_entity_decode((string) $value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+	return '"'.str_replace('"', '""', $value).'"';
 }

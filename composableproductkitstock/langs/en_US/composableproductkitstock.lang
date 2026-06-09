@@ -32,3 +32,4 @@ ExportSelectColumn = Standard attributes
 ExportInclude = Include
 ExportDownloadCSV = Download CSV
 ExportEffectiveStock = Stock (Real + Composable)
+ExportFilter = Filters

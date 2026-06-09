@@ -21,7 +21,7 @@
  * \brief   Hooks
  */
 
-require_once "composableproductkitstock.class.php";
+require_once __DIR__.'/composableproductkitstock.class.php';
 
 /**
  * Class ActionsComposableProductKitStock
@@ -83,11 +83,10 @@ class ActionsComposableProductKitStock
 		global $db, $langs;
 		$langs->load("composableproductkitstock@composableproductkitstock");
 		if($action == 'view' || $action == '') {
-			$composable_produt_kit_stock_label = '';
 			$composable_produt_kit_stock = ComposableProductKitStock::getProductKitComposableStock($object->id);
-			if($composable_produt_kit_stock == -1 || $composable_produt_kit_stock == -2 || $composable_produt_kit_stock == -3) {
+			if($composable_produt_kit_stock < 0) {
 				$this->results = array('value' => $composable_produt_kit_stock);
-				$this->resprints = $composable_produt_kit_stock_label;
+				$this->resprints = '';
 			} else {
 				$form = new Form($db);
 				$composable_produt_kit_stock_label = (string)$composable_produt_kit_stock;
@@ -144,7 +143,7 @@ class ActionsComposableProductKitStock
 			if(empty($parameters['arrayfields']['composablestock']['checked'])) {
 				return 0;
 			}
-			$this->resprints = '<td class="liste_titre">&nbsp</td>';
+			$this->resprints = '<td class="liste_titre">&nbsp;</td>';
 			return 0;
 		} else {
 			return 0;
@@ -215,7 +214,7 @@ class ActionsComposableProductKitStock
 					$composable_produt_kit_stock = $langs->trans("NoSubProduct");
 				}
 			} else {
-				$composable_produt_kit_stock = empty((string)$result) ? 'error' : (string)$result;
+				$composable_produt_kit_stock = (string)$result;
 			}
 			$this->resprints = '<td class="center nowraponall">' . $composable_produt_kit_stock . '</td>';
 			return 0;

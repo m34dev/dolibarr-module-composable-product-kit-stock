@@ -32,3 +32,4 @@ ExportSelectColumn = Attributs standards
 ExportInclude = Inclure
 ExportDownloadCSV = Télécharger CSV
 ExportEffectiveStock = Stock (Physique + Composable)
+ExportFilter = Filtres
