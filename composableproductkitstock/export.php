@@ -90,7 +90,7 @@ foreach ($selected as $col) {
 }
 echo implode(',', array_map('composableproductkitstock_csvquote', $headers))."\n";
 
-$categoryIds = array_filter(array_map('intval', (array) GETPOST('search_category_product_id', 'array:int')));
+$categoryIds = array_filter(array_map('intval', (array) GETPOST('search_category_product_id', 'array:int')), fn ($v) => $v > 0);
 
 $sql = 'SELECT p.rowid FROM '.MAIN_DB_PREFIX.'product as p';
 $sql .= ' WHERE p.entity IN ('.getEntity('product').')';
