@@ -64,7 +64,7 @@ $column_labels = array(
 if (!empty($extrafields->attributes['product']['label'])) {
 	foreach ($extrafields->attributes['product']['label'] as $key => $extralabel) {
 		$allowed_columns[] = 'extra_'.$key;
-		$column_labels['extra_'.$key] = $extralabel;
+		$column_labels['extra_'.$key] = $langs->trans($extralabel);
 	}
 }
 
