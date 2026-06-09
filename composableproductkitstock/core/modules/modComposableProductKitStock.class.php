@@ -397,7 +397,7 @@ class modComposableProductKitStock extends DolibarrModules
 			'titre'    => 'ExportDataset_composableproductkitstock_0',
 			'mainmenu' => 'tools',
 			'leftmenu' => 'composableproductkitstock_export',
-			'url'      => '/composableproductkitstock/export.php',
+			'url'      => '/composableproductkitstock/export_options.php',
 			'langs'    => 'composableproductkitstock@composableproductkitstock',
 			'position' => 100,
 			'enabled'  => 'isModEnabled("composableproductkitstock")',

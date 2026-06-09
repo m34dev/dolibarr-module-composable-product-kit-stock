@@ -33,6 +33,7 @@ if (!$res) {
 }
 
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
+require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 dol_include_once('/composableproductkitstock/class/composableproductkitstock.class.php');
 
 $langs->loadLangs(array('products', 'stocks', 'composableproductkitstock@composableproductkitstock'));
@@ -44,20 +45,49 @@ if (!$user->hasRight('stock', 'lire')) {
 	accessforbidden();
 }
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+	header('Location: '.dol_buildpath('/composableproductkitstock/export_options.php', 1));
+	exit;
+}
+
+$extrafields = new ExtraFields($db);
+$extrafields->fetch_name_optionals_label('product');
+
+$allowed_columns = array('ref', 'label', 'price', 'stock');
+$column_labels = array(
+	'ref'   => $langs->trans('Ref'),
+	'label' => $langs->trans('Label'),
+	'price' => $langs->trans('Price'),
+	'stock' => $langs->trans('ExportEffectiveStock'),
+);
+
+if (!empty($extrafields->attributes['product']['label'])) {
+	foreach ($extrafields->attributes['product']['label'] as $key => $extralabel) {
+		$allowed_columns[] = 'extra_'.$key;
+		$column_labels['extra_'.$key] = $extralabel;
+	}
+}
+
+$selected = GETPOST('columns', 'array');
+if (empty($selected)) {
+	$selected = $allowed_columns;
+} else {
+	$selected = array_values(array_intersect($selected, $allowed_columns));
+	if (empty($selected)) {
+		$selected = $allowed_columns;
+	}
+}
+
 top_httphead('text/csv');
 header('Content-Disposition: attachment; filename="product_kit_stock_'.dol_print_date(dol_now(), 'dayhourlog').'.csv"');
 
 // UTF-8 BOM so Excel opens the file correctly
 echo "\xEF\xBB\xBF";
 
-$headers = array(
-	$langs->trans('Ref'),
-	$langs->trans('Label'),
-	$langs->trans('Price'),
-	$langs->trans('RealStock'),
-	$langs->trans('VirtualStock'),
-	$langs->trans('ComposableStock'),
-);
+$headers = array();
+foreach ($selected as $col) {
+	$headers[] = $column_labels[$col];
+}
 echo implode(',', array_map('composableproductkitstock_csvquote', $headers))."\n";
 
 $sql = 'SELECT rowid FROM '.MAIN_DB_PREFIX.'product';
@@ -74,21 +104,40 @@ while ($obj = $db->fetch_object($resql)) {
 	$product->fetch((int) $obj->rowid);
 	$product->load_stock('nobatch');
 
+	$product->fetch_optionals();
 	$price = isset($product->price) ? (float) $product->price : 0.0;
 	$real_stock = isset($product->stock_reel) ? (float) $product->stock_reel : 0.0;
-	$virtual_stock = isset($product->stock_theorique) ? (float) $product->stock_theorique : $real_stock;
 
 	$composable_result = ComposableProductKitStock::getProductKitComposableStock((string) $obj->rowid);
-	$composable_display = ($composable_result >= 0) ? (string) $composable_result : $langs->trans('NA');
+	$stock = ($composable_result >= 0) ? (string) ($real_stock + $composable_result) : (string) $real_stock;
 
-	$row = array(
-		$product->ref,
-		$product->label,
-		(string) $price,
-		(string) $real_stock,
-		(string) $virtual_stock,
-		$composable_display,
+	$all_values = array(
+		'ref'   => $product->ref,
+		'label' => $product->label,
+		'price' => (string) $price,
+		'stock' => $stock,
 	);
+
+	if (!empty($extrafields->attributes['product']['label'])) {
+		foreach ($extrafields->attributes['product']['label'] as $key => $extralabel) {
+			$raw = isset($product->array_options['options_'.$key]) ? $product->array_options['options_'.$key] : '';
+			$type = $extrafields->attributes['product']['type'][$key] ?? '';
+			if ($type === 'date') {
+				$all_values['extra_'.$key] = $raw ? dol_print_date((int) $raw, 'day') : '';
+			} elseif ($type === 'datetime') {
+				$all_values['extra_'.$key] = $raw ? dol_print_date((int) $raw, 'dayhour') : '';
+			} elseif ($type === 'boolean' || $type === 'checkbox') {
+				$all_values['extra_'.$key] = $raw ? '1' : '0';
+			} else {
+				$all_values['extra_'.$key] = (string) $raw;
+			}
+		}
+	}
+
+	$row = array();
+	foreach ($selected as $col) {
+		$row[] = $all_values[$col];
+	}
 	echo implode(',', array_map('composableproductkitstock_csvquote', $row))."\n";
 }
 

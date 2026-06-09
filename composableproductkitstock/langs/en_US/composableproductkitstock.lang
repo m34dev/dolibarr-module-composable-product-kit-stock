@@ -24,7 +24,11 @@ COMPOSABLEPRODUCTKITSTOCK_WAREHOUSEDETAIL = Show composable stock per warehouse
 #
 # Export
 #
-ExportDataset_composableproductkitstock_0 = Product Kit Stock Export
+ExportDataset_composableproductkitstock_0 = Composable Product Kit Stock Export
 RealStock = Real stock
 VirtualStock = Virtual stock
 ComposableStock = Composable stock
+ExportSelectColumn = Standard attributes
+ExportInclude = Include
+ExportDownloadCSV = Download CSV
+ExportEffectiveStock = Stock (Real + Composable)
