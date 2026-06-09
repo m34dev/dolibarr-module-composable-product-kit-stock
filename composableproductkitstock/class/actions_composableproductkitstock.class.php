@@ -21,7 +21,7 @@
  * \brief   Hooks
  */
 
-require_once "composableproductkitstock.class.php";
+require_once __DIR__.'/composableproductkitstock.class.php';
 
 /**
  * Class ActionsComposableProductKitStock
@@ -83,11 +83,10 @@ class ActionsComposableProductKitStock
 		global $db, $langs;
 		$langs->load("composableproductkitstock@composableproductkitstock");
 		if($action == 'view' || $action == '') {
-			$composable_produt_kit_stock_label = '';
 			$composable_produt_kit_stock = ComposableProductKitStock::getProductKitComposableStock($object->id);
-			if($composable_produt_kit_stock == -1 || $composable_produt_kit_stock == -2 || $composable_produt_kit_stock == -3) {
+			if($composable_produt_kit_stock < 0) {
 				$this->results = array('value' => $composable_produt_kit_stock);
-				$this->resprints = $composable_produt_kit_stock_label;
+				$this->resprints = '';
 			} else {
 				$form = new Form($db);
 				$composable_produt_kit_stock_label = (string)$composable_produt_kit_stock;
@@ -106,6 +105,29 @@ class ActionsComposableProductKitStock
 		}
 		return 0;
 	}
+
+	/**
+	 * Overloading the doActions function: replacing the parent's function with the one below
+	 *
+	 * @param	array			$parameters		Hook metadatas (context, etc...) — contains 'arrayfields' by reference
+	 * @param	Product			&$object		The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...)
+	 * @param	string			&$action		Current action (if set). Generally create or edit or null
+	 * @param	HookManager		$hookmanager	Hook manager propagated to allow calling another hook
+	 * @return	int								< 0 on error, 0 on success, 1 to replace standard code
+	 */
+	function doActions($parameters, &$object, &$action, $hookmanager) {
+		global $langs;
+		if (in_array('productservicelist', $hookmanager->contextarray)) {
+			$langs->load("composableproductkitstock@composableproductkitstock");
+			$parameters['arrayfields']['composablestock'] = array(
+				'label'    => $langs->trans("ComposableProductKitStockLevelShort"),
+				'checked'  => 1,
+				'enabled'  => 1,
+				'position' => 1000,
+			);
+		}
+		return 0;
+	}
 	
 	/**
 	 * Overloading the printFieldListOption function: replacing the parent's function with the one below
@@ -118,7 +140,10 @@ class ActionsComposableProductKitStock
 	 */
 	function printFieldListOption($parameters, &$object, &$action, $hookmanager) {
 		if(in_array('productservicelist', $hookmanager->contextarray)) {
-			$this->resprints = '<td class="liste_titre">&nbsp</td>';
+			if(empty($parameters['arrayfields']['composablestock']['checked'])) {
+				return 0;
+			}
+			$this->resprints = '<td class="liste_titre">&nbsp;</td>';
 			return 0;
 		} else {
 			return 0;
@@ -138,6 +163,9 @@ class ActionsComposableProductKitStock
 		global $langs;
 		$langs->load("composableproductkitstock@composableproductkitstock");
 		if(in_array('productservicelist', $hookmanager->contextarray)) {
+			if(empty($parameters['arrayfields']['composablestock']['checked'])) {
+				return 0;
+			}
 			$this->resprints = getTitleFieldOfList($langs->trans("ComposableProductKitStockLevelShort"), 0, $_SERVER["PHP_SELF"], "", "", $parameters['param'], '', $parameters['sortfield'], $parameters['sortorder'], 'center nowrap ');
 			$parameters['totalarray']['nbfield']++;
 			return 0;
@@ -162,6 +190,9 @@ class ActionsComposableProductKitStock
 		global $langs;
 		$langs->load("composableproductkitstock@composableproductkitstock");
 		if(in_array('productservicelist', $hookmanager->contextarray) || in_array('productcompositioncard', $hookmanager->contextarray)) {
+			if(in_array('productservicelist', $hookmanager->contextarray) && empty($parameters['arrayfields']['composablestock']['checked'])) {
+				return 0;
+			}
 			if(in_array('productservicelist', $hookmanager->contextarray)) {
 				if(empty($parameters['obj'])) {
 					return -1;
@@ -183,7 +214,7 @@ class ActionsComposableProductKitStock
 					$composable_produt_kit_stock = $langs->trans("NoSubProduct");
 				}
 			} else {
-				$composable_produt_kit_stock = empty((string)$result) ? 'error' : (string)$result;
+				$composable_produt_kit_stock = (string)$result;
 			}
 			$this->resprints = '<td class="center nowraponall">' . $composable_produt_kit_stock . '</td>';
 			return 0;

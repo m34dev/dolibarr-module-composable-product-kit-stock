@@ -95,11 +95,6 @@ if (!class_exists('FormSetup')) {
 }
 $formSetup = new FormSetup($db);
 
-// Access control
-if (!$user->admin) {
-	accessforbidden();
-}
-
 // Enter here all parameters in your setup page
 
 $formSetup->newItem('COMPOSABLEPRODUCTKITSTOCK_WAREHOUSEDETAIL')->setAsYesNo();

@@ -73,7 +73,7 @@ class modComposableProductKitStock extends DolibarrModules
 		$this->editor_squarred_logo = 'logoSquareM34D.png@composableproductkitstock';					// Must be image filename into the module/img directory followed with @modulename. Example: 'myimage.png@composableproductkitstock'
 
 		// Possible values for version are: 'development', 'experimental', 'dolibarr', 'dolibarr_deprecated', 'experimental_deprecated' or a version string like 'x.y.z'
-		$this->version = '1.1.4';
+		$this->version = '1.2.0';
 		// Url to the file with your last numberversion of this module
 		$this->url_last_version = 'https://github.com/m34dev/dolibarr-module-composable-product-kit-stock/raw/refs/heads/main/versionmodule.txt';
 
@@ -84,7 +84,7 @@ class modComposableProductKitStock extends DolibarrModules
 		// If file is in theme/yourtheme/img directory under name object_pictovalue.png, use this->picto='pictovalue'
 		// If file is in module/img directory under name object_pictovalue.png, use this->picto='pictovalue@module'
 		// To use a supported fa-xxx css style of font awesome, use this->picto='xxx'
-		$this->picto = 'composableproductkitstock@composableproductkitstock';;
+		$this->picto = 'composableproductkitstock@composableproductkitstock';
 
 		// Define some features supported by module (triggers, login, substitutions, menus, css, etc...)
 		$this->module_parts = array(
@@ -391,6 +391,20 @@ class modComposableProductKitStock extends DolibarrModules
 		*/
 		/* END MODULEBUILDER LEFTMENU MYOBJECT */
 
+		$this->menu[$r++] = array(
+			'fk_menu'  => 'fk_mainmenu=tools',
+			'type'     => 'left',
+			'titre'    => 'ExportDataset_composableproductkitstock_0',
+			'mainmenu' => 'tools',
+			'leftmenu' => 'composableproductkitstock_export',
+			'url'      => '/composableproductkitstock/export_options.php',
+			'langs'    => 'composableproductkitstock@composableproductkitstock',
+			'position' => 100,
+			'enabled'  => 'isModEnabled("composableproductkitstock")',
+			'perms'    => '$user->hasRight("stock", "lire")',
+			'target'   => '',
+			'user'     => 2,
+		);
 
 		// Exports profiles provided by this module
 		$r = 0;

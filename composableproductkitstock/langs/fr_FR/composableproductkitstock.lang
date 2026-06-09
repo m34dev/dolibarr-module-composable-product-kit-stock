@@ -20,3 +20,16 @@ NoSubSubProduct = Aucun sous sous-produit
 NA = N/A
 WarehousesComposableProductKitStockLevel = Stock composable par entrepôt :
 COMPOSABLEPRODUCTKITSTOCK_WAREHOUSEDETAIL = Afficher stock composable par entrepôt
+
+#
+# Export
+#
+ExportDataset_composableproductkitstock_0 = Export Stock Composable Produit Kit
+RealStock = Stock réel
+VirtualStock = Stock virtuel
+ComposableStock = Stock composable
+ExportSelectColumn = Attributs standards
+ExportInclude = Inclure
+ExportDownloadCSV = Télécharger CSV
+ExportEffectiveStock = Stock (Physique + Composable)
+ExportFilter = Filtres

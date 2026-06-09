@@ -58,8 +58,18 @@ class ComposableProductKitStock
 			dol_syslog('Product has no subproducts', LOG_DEBUG);
 			return -3;
 		} else {
-			dol_syslog('ComposableProductKitStock::getProductKitComposableStock', LOG_DEBUG);
 			dol_syslog('Product has ' . count($product->sousprods) . ' subproducts', LOG_DEBUG);
+
+			if (!is_null($warehouse_id)) {
+				$warehouse = new Entrepot($db);
+				$result = $warehouse->fetch($warehouse_id);
+				if ($result < 1) {
+					dol_syslog('Error loading warehouse ID: ' . $warehouse_id, LOG_ERR);
+					return -4;
+				}
+				dol_syslog('Warehouse ID: ' . $warehouse_id . ' ref: ' . $warehouse->ref, LOG_DEBUG);
+			}
+
 			foreach($product->sousprods as $product_ref => $subproducts_data) {
 				dol_syslog('Product Ref: ' . $product_ref, LOG_DEBUG);
 				foreach($subproducts_data as $subproduct_id => $subproduct_data) {
@@ -77,23 +87,15 @@ class ComposableProductKitStock
 						if($result < 1) {
 							dol_syslog('Error loading stock, subproduct ID: ' . $subproduct_id, LOG_ERR);
 						}
-						if(is_null($warehouse_id)) { // TODO: Manage negative stock values
+						if(is_null($warehouse_id)) {
 							$subproducts_physical_stock[$subproduct_id] = $subproduct->stock_reel;
 						} else {
-							$warehouse = new Entrepot($db);
-							$result = $warehouse->fetch($warehouse_id);
-							if($result < 1) {
-								dol_syslog('Error loading warehouse ID: ' . $warehouse_id, LOG_ERR);
-								return -4;
+							if(!isset($subproduct->stock_warehouse[$warehouse_id])) {
+								$subproducts_physical_stock[$subproduct_id] = 0;
+								dol_syslog('Subproduct ID: ' . $subproduct_id . ' does not have stock in warehouse ID: ' . $warehouse_id, LOG_DEBUG);
 							} else {
-								dol_syslog('Warehouse ID: ' . $warehouse_id . ' ref: ' . $warehouse->ref, LOG_DEBUG);
-								if(!isset($subproduct->stock_warehouse[$warehouse_id])) {
-									$subproducts_physical_stock[$subproduct_id] = 0;
-									dol_syslog('Subproduct ID: ' . $subproduct_id . ' does not have stock in warehouse ID: ' . $warehouse_id, LOG_DEBUG);
-								} else {
-									$subproducts_physical_stock[$subproduct_id] = $subproduct->stock_warehouse[$warehouse_id]->real;
-									dol_syslog('Subproduct physical stock: ' . $subproducts_physical_stock[$subproduct_id], LOG_DEBUG);
-								}
+								$subproducts_physical_stock[$subproduct_id] = $subproduct->stock_warehouse[$warehouse_id]->real;
+								dol_syslog('Subproduct physical stock: ' . $subproducts_physical_stock[$subproduct_id], LOG_DEBUG);
 							}
 						}
 						$product_required_subproduct_quantities[$subproduct_id] = $subproduct_data[1];
@@ -105,6 +107,9 @@ class ComposableProductKitStock
 				$subproduct_composable_stock = floor($subproduct_physical_stock / $product_required_subproduct_quantities[$subproduct_id]);
 				$max_composable_subproduct_stock[$subproduct_id] = $subproduct_composable_stock;
 				dol_syslog('Subproduct ID: ' . $subproduct_id . ' composable stock: ' . $subproduct_composable_stock, LOG_DEBUG);
+			}
+			if (empty($max_composable_subproduct_stock)) {
+				return -3;
 			}
 			$max_composable_stock = min($max_composable_subproduct_stock);
 			dol_syslog('Max. composable stock: ' . $max_composable_stock, LOG_DEBUG);
