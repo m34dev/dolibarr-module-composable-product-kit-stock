@@ -52,12 +52,13 @@ $available_columns = array(
 	'label' => $langs->trans('Label'),
 	'price' => $langs->trans('Price'),
 	'stock' => $langs->trans('ExportEffectiveStock'),
+	'url'   => $langs->trans("PublicUrl")
 );
 
 $extra_columns = array();
 if (!empty($extrafields->attributes['product']['label'])) {
 	foreach ($extrafields->attributes['product']['label'] as $key => $extralabel) {
-		$extra_columns['extra_'.$key] = $extralabel;
+		$extra_columns['extra_'.$key] = $langs->trans($extralabel);
 	}
 }
 

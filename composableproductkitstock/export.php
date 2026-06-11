@@ -53,12 +53,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $extrafields = new ExtraFields($db);
 $extrafields->fetch_name_optionals_label('product');
 
-$allowed_columns = array('ref', 'label', 'price', 'stock');
+$allowed_columns = array('ref', 'label', 'price', 'stock', 'url');
 $column_labels = array(
 	'ref'   => $langs->trans('Ref'),
 	'label' => $langs->trans('Label'),
 	'price' => $langs->trans('Price'),
 	'stock' => $langs->trans('ExportEffectiveStock'),
+	'url'   => $langs->trans("PublicUrl")
 );
 
 if (!empty($extrafields->attributes['product']['label'])) {
@@ -123,6 +124,7 @@ while ($obj = $db->fetch_object($resql)) {
 		'label' => $product->label,
 		'price' => (string) $price,
 		'stock' => $stock,
+		'url'   => $product->url
 	);
 
 	if (!empty($extrafields->attributes['product']['label'])) {
