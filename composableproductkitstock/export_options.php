@@ -52,6 +52,7 @@ $available_columns = array(
 	'label' => $langs->trans('Label'),
 	'price' => $langs->trans('Price'),
 	'stock' => $langs->trans('ExportEffectiveStock'),
+	'url'   => $langs->trans("PublicUrl")
 );
 
 $extra_columns = array();
