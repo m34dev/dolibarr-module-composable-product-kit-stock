@@ -71,9 +71,12 @@ class ComposableProductKitStockApi extends DolibarrApi
 		if (!DolibarrApiAccess::$user->hasRight('stock', 'lire')) {
 			throw new RestException(403);
 		}
+		if (empty($ref)) {
+			throw new RestException(400, 'Ref is mandatory');
+		}
 		$product = new Product($this->db);
 		$result = $product->fetch(0, $ref);
-		if ($result == -1) {
+		if ($result <= 0) {
 			throw new RestException(404, 'Product not found');
 		}
 		$product_id = $product->id;
@@ -85,7 +88,7 @@ class ComposableProductKitStockApi extends DolibarrApi
 			throw new RestException(500, 'Product is a service');
 		}
 		if ($result == -3) {
-			throw new RestException(500, 'Product has no subproducts');
+			throw new RestException(404, 'Product has no subproducts');
 		}
 		
 		return $result;
