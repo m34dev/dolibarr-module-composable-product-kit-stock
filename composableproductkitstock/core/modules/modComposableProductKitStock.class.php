@@ -511,7 +511,11 @@ class modComposableProductKitStock extends DolibarrModules
 		// Permissions
 		$this->remove($options);
 
-		$sql = array();
+		$sql = array(
+			// 1.3.0-dev1 used a template type longer than the varchar(32) column, saved truncated: restore the type.
+			// No framework method updates email templates by type.
+			"UPDATE ".$this->db->prefix()."c_email_templates SET type_template = 'composableproductkitstock' WHERE type_template = 'composableproductkitstock_stock' AND entity = ".((int) $conf->entity),
+		);
 
 		// Document templates
 		/*$moduledir = dol_sanitizeFileName('composableproductkitstock');

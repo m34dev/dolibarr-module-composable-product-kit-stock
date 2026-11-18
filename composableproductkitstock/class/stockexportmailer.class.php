@@ -43,9 +43,10 @@ dol_include_once('/composableproductkitstock/class/composableproductkitstock.cla
 class StockExportMailer
 {
 	/**
-	 * Email template type (Setup > Emails > Email templates)
+	 * Email template type (Setup > Emails > Email templates). At most 32 characters: llx_c_email_templates.type_template
+	 * is a varchar(32), longer values are truncated on save and the templates no longer match.
 	 */
-	const TEMPLATE_TYPE = 'composableproductkitstock_stockexport';
+	const TEMPLATE_TYPE = 'composableproductkitstock';
 
 	/**
 	 * Agenda event code of an export sent to a contact
