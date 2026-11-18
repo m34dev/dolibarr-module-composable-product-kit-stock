@@ -33,7 +33,7 @@ if (!$res) {
 }
 
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formother.class.php';
-require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
+dol_include_once('/composableproductkitstock/class/composableproductkitstock.class.php');
 
 $langs->loadLangs(array('products', 'stocks', 'composableproductkitstock@composableproductkitstock'));
 
@@ -44,21 +44,13 @@ if (!$user->hasRight('stock', 'lire')) {
 	accessforbidden();
 }
 
-$extrafields = new ExtraFields($db);
-$extrafields->fetch_name_optionals_label('product');
-
-$available_columns = array(
-	'ref'   => $langs->trans('Ref'),
-	'label' => $langs->trans('Label'),
-	'price' => $langs->trans('Price'),
-	'stock' => $langs->trans('ExportEffectiveStock'),
-	'url'   => $langs->trans("PublicUrl")
-);
-
+$available_columns = array();
 $extra_columns = array();
-if (!empty($extrafields->attributes['product']['label'])) {
-	foreach ($extrafields->attributes['product']['label'] as $key => $extralabel) {
-		$extra_columns['extra_'.$key] = $langs->trans($extralabel);
+foreach (ComposableProductKitStock::getExportColumns($langs) as $key => $label) {
+	if (strpos($key, 'extra_') === 0) {
+		$extra_columns[$key] = $label;
+	} else {
+		$available_columns[$key] = $label;
 	}
 }
 

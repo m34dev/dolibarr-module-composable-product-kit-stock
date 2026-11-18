@@ -22,12 +22,277 @@
  */
 
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
+require_once DOL_DOCUMENT_ROOT.'/categories/class/categorie.class.php';
+require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 
 /**
  * Class for ComposableProductKitStock
  */
 class ComposableProductKitStock
 {
+	/**
+	 * @var ExtraFields|null	Product extrafields, loaded once
+	 */
+	private static $productExtraFields = null;
+
+	/**
+	 * Product extrafields definitions.
+	 *
+	 * @return	ExtraFields
+	 */
+	private static function getProductExtraFields()
+	{
+		global $db;
+
+		if (self::$productExtraFields === null) {
+			self::$productExtraFields = new ExtraFields($db);
+			self::$productExtraFields->fetch_name_optionals_label('product');
+		}
+		return self::$productExtraFields;
+	}
+
+	/**
+	 * Columns available in the stock export: standard attributes, then product extrafields (key 'extra_<code>').
+	 *
+	 * @param	Translate	$outputlangs	Language of the labels
+	 * @return	array<string,string>		Column key => label (not HTML escaped)
+	 */
+	public static function getExportColumns($outputlangs)
+	{
+		$outputlangs->loadLangs(array('products', 'stocks', 'composableproductkitstock@composableproductkitstock'));
+
+		$columns = array(
+			'ref'   => $outputlangs->transnoentitiesnoconv('Ref'),
+			'label' => $outputlangs->transnoentitiesnoconv('Label'),
+			'price' => $outputlangs->transnoentitiesnoconv('Price'),
+			'stock' => $outputlangs->transnoentitiesnoconv('ExportEffectiveStock'),
+			'url'   => $outputlangs->transnoentitiesnoconv('PublicUrl'),
+		);
+
+		$extrafields = self::getProductExtraFields();
+		if (!empty($extrafields->attributes['product']['label'])) {
+			foreach ($extrafields->attributes['product']['label'] as $key => $extralabel) {
+				$columns['extra_'.$key] = $outputlangs->transnoentitiesnoconv($extralabel);
+			}
+		}
+
+		return $columns;
+	}
+
+	/**
+	 * Columns exported by default: the standard attributes.
+	 *
+	 * @return	string[]
+	 */
+	public static function getDefaultExportColumns()
+	{
+		return array('ref', 'label', 'price', 'stock', 'url');
+	}
+
+	/**
+	 * Ids of the products to export.
+	 *
+	 * @param	int		$categoryId		Product category id, 0 for all products
+	 * @param	bool	$withSubcats	Also include the products of the sub-categories
+	 * @return	int[]|int				Product ids, or -1 on error
+	 */
+	public static function fetchExportProductIds($categoryId = 0, $withSubcats = false)
+	{
+		global $db;
+
+		if ($categoryId > 0) {
+			$categoryIds = array((int) $categoryId);
+			if ($withSubcats) {
+				$categorie = new Categorie($db);
+				$arbo = $categorie->get_full_arbo(Categorie::TYPE_PRODUCT, (int) $categoryId, 1);
+				if (is_array($arbo)) {
+					foreach ($arbo as $cat) {
+						$categoryIds[] = (int) $cat['id'];
+					}
+				}
+			}
+
+			$ids = array();
+			foreach (array_unique($categoryIds) as $id) {
+				$categorie = new Categorie($db);
+				if ($categorie->fetch($id) <= 0) {
+					continue;
+				}
+				$objects = $categorie->getObjectsInCateg(Categorie::TYPE_PRODUCT, 1);
+				if (!is_array($objects)) {
+					return -1;
+				}
+				foreach ($objects as $productId) {
+					$ids[(int) $productId] = (int) $productId;
+				}
+			}
+			return array_values($ids);
+		}
+
+		// No category: all products. No framework method returns the ids of all products.
+		$sql = 'SELECT p.rowid FROM '.$db->prefix().'product as p';
+		$sql .= ' WHERE p.entity IN ('.getEntity('product').')';
+		$sql .= ' ORDER BY p.ref ASC';
+		$resql = $db->query($sql);
+		if (!$resql) {
+			dol_syslog(__METHOD__.' '.$db->lasterror(), LOG_ERR);
+			return -1;
+		}
+		$ids = array();
+		while ($obj = $db->fetch_object($resql)) {
+			$ids[] = (int) $obj->rowid;
+		}
+		$db->free($resql);
+
+		return $ids;
+	}
+
+	/**
+	 * Read the export data of products, sorted by ref. Values are raw: numbers as float, extrafields as stored.
+	 *
+	 * @param	int[]	$productIds		Product ids
+	 * @param	bool	$onSaleOnly		Skip the products not on sale
+	 * @return	array<int,array<string,mixed>>	One array column key => value per product
+	 */
+	public static function getExportRows($productIds, $onSaleOnly = false)
+	{
+		global $db;
+
+		$extrafields = self::getProductExtraFields();
+		$extrakeys = empty($extrafields->attributes['product']['label']) ? array() : array_keys($extrafields->attributes['product']['label']);
+
+		$rows = array();
+		foreach ($productIds as $productId) {
+			$product = new Product($db);
+			if ($product->fetch((int) $productId) <= 0) {
+				continue;
+			}
+			if ($onSaleOnly && empty($product->status)) {
+				continue;
+			}
+			$product->load_stock('nobatch');
+			$product->fetch_optionals();
+
+			$real_stock = isset($product->stock_reel) ? (float) $product->stock_reel : 0.0;
+			$composable_result = self::getProductKitComposableStock((string) $product->id);
+
+			$values = array(
+				'ref'   => (string) $product->ref,
+				'label' => (string) $product->label,
+				'price' => isset($product->price) ? (float) $product->price : 0.0,
+				'stock' => ($composable_result >= 0) ? $real_stock + $composable_result : $real_stock,
+				'url'   => (string) $product->url,
+			);
+			foreach ($extrakeys as $key) {
+				$values['extra_'.$key] = isset($product->array_options['options_'.$key]) ? $product->array_options['options_'.$key] : '';
+			}
+			$rows[] = $values;
+		}
+
+		usort($rows, function ($a, $b) {
+			return strcasecmp($a['ref'], $b['ref']);
+		});
+
+		return $rows;
+	}
+
+	/**
+	 * CSV separator: Dolibarr's global setting of CSV exports (Setup > Modules > Data exports).
+	 *
+	 * @return	string
+	 */
+	public static function getCsvSeparator()
+	{
+		$separator = getDolGlobalString('EXPORT_CSV_SEPARATOR_TO_USE', ',');
+		return ($separator === '' ? ',' : $separator);
+	}
+
+	/**
+	 * Build the CSV file content (UTF-8 with BOM, so Excel opens it correctly).
+	 *
+	 * Numbers use a decimal comma when the separator is ';' (spreadsheets in comma decimal locales), a dot otherwise.
+	 *
+	 * @param	string[]						$columns		Column keys, in order
+	 * @param	array<int,array<string,mixed>>	$rows			Rows from getExportRows()
+	 * @param	Translate						$outputlangs	Language of the headers and dates
+	 * @return	string
+	 */
+	public static function buildExportCsv($columns, $rows, $outputlangs)
+	{
+		$separator = self::getCsvSeparator();
+		$labels = self::getExportColumns($outputlangs);
+		$extrafields = self::getProductExtraFields();
+		$types = empty($extrafields->attributes['product']['type']) ? array() : $extrafields->attributes['product']['type'];
+
+		$out = "\xEF\xBB\xBF";
+
+		$headers = array();
+		foreach ($columns as $col) {
+			$headers[] = self::csvQuote(isset($labels[$col]) ? $labels[$col] : $col);
+		}
+		$out .= implode($separator, $headers)."\n";
+
+		foreach ($rows as $values) {
+			$line = array();
+			foreach ($columns as $col) {
+				$raw = isset($values[$col]) ? $values[$col] : '';
+				if ($col == 'price' || $col == 'stock') {
+					$cell = self::formatNumber($raw, $separator);
+				} elseif (strpos($col, 'extra_') === 0) {
+					$type = isset($types[substr($col, 6)]) ? $types[substr($col, 6)] : '';
+					if ($type === 'date') {
+						$cell = $raw ? dol_print_date((int) $raw, 'day', 'auto', $outputlangs) : '';
+					} elseif ($type === 'datetime') {
+						$cell = $raw ? dol_print_date((int) $raw, 'dayhour', 'auto', $outputlangs) : '';
+					} elseif ($type === 'boolean' || $type === 'checkbox') {
+						$cell = $raw ? '1' : '0';
+					} elseif (($type === 'double' || $type === 'price') && $raw !== '' && $raw !== null) {
+						$cell = self::formatNumber($raw, $separator);
+					} else {
+						$cell = (string) $raw;
+					}
+				} else {
+					$cell = (string) $raw;
+				}
+				$line[] = self::csvQuote($cell);
+			}
+			$out .= implode($separator, $line)."\n";
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Format a number for the CSV: no thousands separator, no trailing zeros, decimal comma when the separator is ';'.
+	 *
+	 * @param	mixed	$value		Number
+	 * @param	string	$separator	CSV separator
+	 * @return	string
+	 */
+	private static function formatNumber($value, $separator)
+	{
+		$s = rtrim(rtrim(number_format((float) $value, 8, '.', ''), '0'), '.');
+		if ($s === '-0' || $s === '') {
+			$s = '0';
+		}
+		if ($separator === ';') {
+			$s = str_replace('.', ',', $s);
+		}
+		return $s;
+	}
+
+	/**
+	 * Wrap a CSV cell value in double quotes, escaping any internal double quotes.
+	 *
+	 * @param	string	$value	Value
+	 * @return	string
+	 */
+	public static function csvQuote($value)
+	{
+		$value = html_entity_decode((string) $value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+		return '"'.str_replace('"', '""', $value).'"';
+	}
+
 	/**
 	 * Get composable stock for a product kit
 	 *

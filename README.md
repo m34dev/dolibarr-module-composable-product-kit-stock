@@ -9,6 +9,19 @@ Get product kit composable stock. A product's composable stock is a virtual stoc
 - See composable product kit stock per warehouse
 - Dedicated API route to get composable product kit stock
 - Export composable product kit stock to CSV
+- Send the composable stock export automatically by email to the contacts of a category, using Dolibarr email templates and scheduled jobs
+
+### Automatic email sending
+
+Configure it in the module setup page:
+
+1. Create a **public** email template of type "Composable kit stock export" in *Setup > Emails > Email templates*. For several languages, create one template per language with the same code (and the same position).
+2. Tag the recipient contacts with a contact category.
+3. In the module setup, select the product category, the exported fields, the contact category, the sender, the template and the schedule (recurrence, sending hours, working days only, number of emails per sending task), then enable automatic sending.
+
+Requirements: the *Scheduled jobs* module enabled with the system cron calling Dolibarr's scheduled jobs, and a valid sender email configured in Dolibarr.
+
+Each contact receives the email in their language (contact language or country, else third party language or country, else the default language). Each sent or failed email is recorded as an event on the contact.
 
 ## Module installation
 

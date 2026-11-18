@@ -235,4 +235,27 @@ class ActionsComposableProductKitStock
 	function loadStaticObject($parameters, &$object, &$action, $hookmanager) {
 		return 0;
 	}
+
+	/**
+	 * Add the stock export email template type to Setup > Emails > Email templates
+	 *
+	 * @param	array			$parameters		Hook metadatas, with 'elementList'
+	 * @param	CommonObject	&$object		Not used
+	 * @param	string			&$action		Current action
+	 * @param	HookManager		$hookmanager	Hook manager propagated to allow calling another hook
+	 * @return	int								0 to keep standard types
+	 */
+	public function emailElementlist($parameters, &$object, &$action, $hookmanager)
+	{
+		global $langs;
+
+		if (in_array('emailtemplates', explode(':', $parameters['context']))) {
+			$langs->load('composableproductkitstock@composableproductkitstock');
+			dol_include_once('/composableproductkitstock/class/stockexportmailer.class.php');
+			$this->results = array(
+				StockExportMailer::TEMPLATE_TYPE => img_picto('', 'composableproductkitstock@composableproductkitstock', 'class="pictofixedwidth"').dol_escape_htmltag($langs->trans('CPKSTemplateType')),
+			);
+		}
+		return 0;
+	}
 }
