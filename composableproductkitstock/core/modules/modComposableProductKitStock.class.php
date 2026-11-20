@@ -175,7 +175,10 @@ class modComposableProductKitStock extends DolibarrModules
 		// Example: $this->const=array(1 => array('COMPOSABLEPRODUCTKITSTOCK_MYNEWCONST1', 'chaine', 'myvalue', 'This is a constant to add', 1),
 		//                             2 => array('COMPOSABLEPRODUCTKITSTOCK_MYNEWCONST2', 'chaine', 'myvalue', 'This is another constant to add', 0, 'current', 1)
 		// );
-		$this->const = array();
+		// Created on activation only if missing, so re-activating the module keeps the admin's choice
+		$this->const = array(
+			0 => array('COMPOSABLEPRODUCTKITSTOCK_WAREHOUSEDETAIL', 'chaine', '1', 'Show composable stock per warehouse', 0, 'current', 0),
+		);
 
 		// Some keys to add into the overwriting translation tables
 		/*$this->overwrite_translation = array(
@@ -487,9 +490,6 @@ class modComposableProductKitStock extends DolibarrModules
 	public function init($options = '')
 	{
 		global $conf, $langs, $db;
-		
-		$result = dolibarr_set_const($db, 'COMPOSABLEPRODUCTKITSTOCK_WAREHOUSEDETAIL', 1);
-		if($result < 0) return $result;
 
 		// Create tables of module at module activation
 		//$result = $this->_load_tables('/install/mysql/', 'composableproductkitstock');

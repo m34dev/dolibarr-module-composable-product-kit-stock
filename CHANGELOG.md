@@ -26,9 +26,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Export stock column: composable stock for kits, physical stock for other products (was physical + composable)
 - Composable stock and exported physical stock ignore closed warehouses
 - Composable stock calculation documented in README
+- Faster composable stock on product card, product list, composition tab and export: subproducts stock read once, total and per warehouse together
+- CSV export includes the products of the sub-categories of the selected category, like the export sent by email
+- API: HTTP 400 for a service (was 500), clearer 404 message for a product that is not a kit
 
 ### Fixed
 
+- "Show composable stock per warehouse" set back to Yes when the module is re-activated
+- Warehouse ref not escaped in the composable stock per warehouse
 - Composable stock per warehouse missing the internal warehouses
 - Composable stock when a subproduct has a negative stock (was shown as N/A or "No subproduct", or hidden)
 - Error when a subproduct has a quantity of 0 in the kit

@@ -62,7 +62,7 @@ if (empty($selected)) {
 
 $catId = (int) GETPOST('search_category_product_id', 'int');
 
-$productIds = ComposableProductKitStock::fetchExportProductIds($catId > 0 ? $catId : 0, false);
+$productIds = ComposableProductKitStock::fetchExportProductIds($catId > 0 ? $catId : 0, true); // With sub-categories, as the export sent by email
 if (!is_array($productIds)) {
 	print $db->lasterror();
 	exit;

@@ -99,7 +99,11 @@ $yesnooptions = array(
 
 // Enter here all parameters in your setup page
 
-$formSetup->newItem('COMPOSABLEPRODUCTKITSTOCK_WAREHOUSEDETAIL')->setAsYesNo();
+// A plain select, not setAsYesNo(): the ajax toggle deletes the constant when switched off, and the module
+// default (descriptor $this->const) would then switch it back on at the next module activation.
+$warehousedetailitem = $formSetup->newItem('COMPOSABLEPRODUCTKITSTOCK_WAREHOUSEDETAIL');
+$warehousedetailitem->setAsSelect($yesnooptions);
+$warehousedetailitem->defaultFieldValue = '1';
 
 // Applies to the CSV export and to the export sent by email. A plain select, not setAsYesNo(): saved with the form,
 // before the exported fields below, so the page reloads with the matching list of fields.
