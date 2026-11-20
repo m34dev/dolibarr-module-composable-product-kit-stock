@@ -82,24 +82,26 @@ class ActionsComposableProductKitStock
 	function formObjectOptions($parameters, &$object, &$action, $hookmanager) {
 		global $db, $langs;
 		$langs->load("composableproductkitstock@composableproductkitstock");
-		if($action == 'view' || $action == '') {
-			$composable_produt_kit_stock = ComposableProductKitStock::getProductKitComposableStock($object->id);
-			if($composable_produt_kit_stock < 0) {
-				$this->results = array('value' => $composable_produt_kit_stock);
+		if(($action == 'view' || $action == '') && $object instanceof Product) {
+			// Total and per-warehouse composable stock from a single reading of the subproducts stock
+			$warehouses = getDolGlobalInt('COMPOSABLEPRODUCTKITSTOCK_WAREHOUSEDETAIL') ? ComposableProductKitStock::getWarehouses() : array();
+			$result = ComposableProductKitStock::computeComposableStock($object, array_keys($warehouses));
+			if(!is_array($result)) {
+				$this->results = array('value' => $result);
 				$this->resprints = '';
 			} else {
 				$form = new Form($db);
-				$composable_produt_kit_stock_label = (string)$composable_produt_kit_stock;
-				$this->results = array('value' => $composable_produt_kit_stock);
-				$this->resprints = '<tr><td>'.$form->textwithpicto($langs->trans("ComposableProductKitStockLevel"), $langs->trans("ComposableProductKitStockLevelTip")).'</td><td>'.$composable_produt_kit_stock_label.'</td></tr>';
-			}
-			if(getDolGlobalString('COMPOSABLEPRODUCTKITSTOCK_WAREHOUSEDETAIL')) {
-				$warehouses_product_kit_composable_stock = ComposableProductKitStock::getWarehousesProductKitComposableStock($object->id);
-				if(is_array($warehouses_product_kit_composable_stock) && !empty($warehouses_product_kit_composable_stock)) {
-					$this->resprints .= '<tr><td>'.$langs->trans("WarehousesComposableProductKitStockLevel").'</td><td></td></tr>';
-					foreach($warehouses_product_kit_composable_stock as $warehouse_ref => $warehouse_composable_stock) {
-						$this->resprints .= '<tr><td style="padding-left:2em;">'.$warehouse_ref.'</td><td>'.$warehouse_composable_stock.'</td></tr>';
+				$this->results = array('value' => $result['total']);
+				$this->resprints = '<tr><td>'.$form->textwithpicto($langs->trans("ComposableProductKitStockLevel"), $langs->trans("ComposableProductKitStockLevelTip")).'</td><td>'.$result['total'].'</td></tr>';
+
+				$detail = '';
+				foreach($warehouses as $warehouse_id => $warehouse_ref) {
+					if(!empty($result['warehouses'][$warehouse_id])) {
+						$detail .= '<tr><td style="padding-left:2em;">'.dol_escape_htmltag($warehouse_ref).'</td><td>'.$result['warehouses'][$warehouse_id].'</td></tr>';
 					}
+				}
+				if($detail !== '') {
+					$this->resprints .= '<tr><td>'.$langs->trans("WarehousesComposableProductKitStockLevel").'</td><td></td></tr>'.$detail;
 				}
 			}
 		}
@@ -197,16 +199,18 @@ class ActionsComposableProductKitStock
 				if(empty($parameters['obj'])) {
 					return -1;
 				}
-				$product_object = $parameters['obj'];
-				$result = ComposableProductKitStock::getProductKitComposableStock($product_object->rowid);
-			} elseif(in_array('productcompositioncard', $hookmanager->contextarray)) {
+				// The list row has the id and type, all the calculation needs: no fetch of the product
+				$product_object = new Product($this->db);
+				$product_object->id = (int) $parameters['obj']->rowid;
+				$product_object->type = (int) $parameters['obj']->fk_product_type;
+			} elseif(in_array('productcompositioncard', $hookmanager->contextarray) && $object instanceof Product) {
 				$product_object = $object;
-				$result = ComposableProductKitStock::getProductKitComposableStock($product_object->id);
 			} else {
 				return -1;
 			}
-			if($result == -1 || $result == -2) {
-				$composable_produt_kit_stock = $langs->trans("NA");
+			$result = ComposableProductKitStock::computeComposableStock($product_object);
+			if(is_array($result)) {
+				$composable_produt_kit_stock = (string) $result['total'];
 			} elseif($result == -3) {
 				if(in_array('productcompositioncard', $hookmanager->contextarray)) {
 					$composable_produt_kit_stock = $langs->trans("NoSubSubProduct");
@@ -214,7 +218,7 @@ class ActionsComposableProductKitStock
 					$composable_produt_kit_stock = $langs->trans("NoSubProduct");
 				}
 			} else {
-				$composable_produt_kit_stock = (string)$result;
+				$composable_produt_kit_stock = $langs->trans("NA");
 			}
 			$this->resprints = '<td class="center nowraponall">' . $composable_produt_kit_stock . '</td>';
 			return 0;
@@ -233,6 +237,29 @@ class ActionsComposableProductKitStock
 	 * @return	int								< 0 on error, 0 on success, 1 to replace standard code
 	 */
 	function loadStaticObject($parameters, &$object, &$action, $hookmanager) {
+		return 0;
+	}
+
+	/**
+	 * Add the stock export email template type to Setup > Emails > Email templates
+	 *
+	 * @param	array			$parameters		Hook metadatas, with 'elementList'
+	 * @param	CommonObject	&$object		Not used
+	 * @param	string			&$action		Current action
+	 * @param	HookManager		$hookmanager	Hook manager propagated to allow calling another hook
+	 * @return	int								0 to keep standard types
+	 */
+	public function emailElementlist($parameters, &$object, &$action, $hookmanager)
+	{
+		global $langs;
+
+		if (in_array('emailtemplates', explode(':', $parameters['context']))) {
+			$langs->load('composableproductkitstock@composableproductkitstock');
+			dol_include_once('/composableproductkitstock/class/stockexportmailer.class.php');
+			$this->results = array(
+				StockExportMailer::TEMPLATE_TYPE => img_picto('', 'composableproductkitstock@composableproductkitstock', 'class="pictofixedwidth"').dol_escape_htmltag($langs->trans('CPKSTemplateType')),
+			);
+		}
 		return 0;
 	}
 }

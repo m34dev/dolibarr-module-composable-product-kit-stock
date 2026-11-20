@@ -52,3 +52,96 @@ function composableproductkitstockAdminPrepareHead()
 	return $head;
 }
 
+
+/**
+ * Value-from-POST callback of a FormSetup item holding an integer between two bounds.
+ *
+ * @param	FormSetupItem	$item	Setup item
+ * @param	int				$min	Minimum value
+ * @param	int				$max	Maximum value
+ * @return	callable
+ */
+function composableproductkitstockIntegerValidator($item, $min, $max)
+{
+	return function () use ($item, $min, $max) {
+		global $langs;
+		$value = trim(GETPOST($item->confKey, 'alpha'));
+		if (!preg_match('/^\d+$/', $value) || (int) $value < $min || (int) $value > $max) {
+			setEventMessages($langs->trans('CPKSErrorIntegerBetween', $item->getNameText(), $min, $max), null, 'errors');
+			return -1;
+		}
+		$item->fieldValue = (string) ((int) $value);
+		return 1;
+	};
+}
+
+/**
+ * Problems in the configuration that would prevent the stock export emails from being sent, shown on the setup page.
+ *
+ * @param	DoliDB				$db		Database handler
+ * @param	StockExportMailer	$mailer	Mailer
+ * @return	string[]					Translated warnings (HTML)
+ */
+function composableproductkitstockGetSetupWarnings($db, $mailer)
+{
+	global $langs;
+
+	$warnings = array();
+
+	if (getDolGlobalString('MAIN_DISABLE_ALL_MAILS')) {
+		$warnings[] = $langs->trans('CPKSWarningMailsDisabled');
+	}
+	if (getDolGlobalString('MAIN_MAIL_FORCE_SENDTO')) {
+		// CMailFile then sends everything to this address and drops cc
+		$warnings[] = $langs->trans('CPKSWarningMailsForcedTo', getDolGlobalString('MAIN_MAIL_FORCE_SENDTO'));
+	}
+
+	// Scheduled job declared by the module descriptor, which the admin may have disabled
+	$nbjobs = 0;
+	if (isModEnabled('cron')) {
+		require_once DOL_DOCUMENT_ROOT.'/cron/class/cronjob.class.php';
+		$cronjob = new Cronjob($db);
+		if ($cronjob->fetchAll('DESC', 't.rowid', 0, 0, 1, "(t.methodename:=:'runScheduledSending') AND (t.objectname:=:'StockExportMailer')") >= 0) {
+			$nbjobs = count($cronjob->lines);
+		}
+	}
+	if ($nbjobs == 0) {
+		$warnings[] = $langs->trans('CPKSWarningCronDisabled').' <a href="'.DOL_URL_ROOT.'/cron/list.php">'.$langs->trans('CronList').'</a>';
+	}
+
+	if (!$mailer->getSender()) {
+		$warnings[] = $langs->trans('CPKSWarningNoSender').' <a href="'.DOL_URL_ROOT.'/admin/mails.php">'.$langs->trans('EMails').'</a>';
+	}
+
+	$template = getDolGlobalString('COMPOSABLEPRODUCTKITSTOCK_EMAIL_TEMPLATE');
+	if ($template === '') {
+		$warnings[] = $langs->trans('CPKSWarningNoTemplate');
+	} elseif (!array_key_exists($template, $mailer->getTemplateOptions())) {
+		$warnings[] = $langs->trans('CPKSWarningTemplateUnavailable', dol_escape_htmltag($template));
+	}
+
+	if (getDolGlobalInt('COMPOSABLEPRODUCTKITSTOCK_EMAIL_CONTACT_CATEGORY') <= 0) {
+		$warnings[] = $langs->trans('CPKSWarningNoContactCategory');
+	}
+
+	return $warnings;
+}
+
+/**
+ * Substitution variables most useful in a stock export email template, with their description.
+ * Every standard substitution variable can be used as well.
+ *
+ * @return	array<string,string>	Variable => translation key of its description
+ */
+function composableproductkitstockGetSubstitutionHelp()
+{
+	return array(
+		'__CONTACTCIVNAME__' => 'CPKSSubstContactCivName',
+		'__THIRDPARTY_NAME__' => 'CPKSSubstThirdpartyName',
+		'__CPKS_NB_PRODUCTS__' => 'CPKSSubstNbProducts',
+		'__CPKS_PRODUCT_CATEGORY__' => 'CPKSSubstProductCategory',
+		'__CPKS_EXPORT_DATE__' => 'CPKSSubstExportDate',
+		'__MYCOMPANY_NAME__' => 'CPKSSubstMyCompanyName',
+		'__SENDEREMAIL_SIGNATURE__' => 'CPKSSubstSenderSignature',
+	);
+}

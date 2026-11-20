@@ -59,8 +59,9 @@ class ComposableProductKitStockApi extends DolibarrApi
 	 *
 	 * @url	GET composableproductkitstock/{ref}
 	 *
+	 * @throws RestException 400 Product is a service
 	 * @throws RestException 403 Not allowed
-	 * @throws RestException 404 Not found
+	 * @throws RestException 404 Product not found, or not a kit
 	 * @throws RestException 500 Internal server error
 	 */
 	public function get($ref)
@@ -79,18 +80,17 @@ class ComposableProductKitStockApi extends DolibarrApi
 		if ($result <= 0) {
 			throw new RestException(404, 'Product not found');
 		}
-		$product_id = $product->id;
-		$result = ComposableProductKitStock::getProductKitComposableStock($product_id);
-		if ($result == -1) {
-			throw new RestException(404, 'Product not found');
+		$result = ComposableProductKitStock::computeComposableStock($product);
+		if (!is_array($result)) {
+			if ($result == -2) {
+				throw new RestException(400, 'Product is a service');
+			}
+			if ($result == -3) {
+				throw new RestException(404, 'Product is not a kit or has no stockable subproducts');
+			}
+			throw new RestException(500, 'Error calculating the composable stock');
 		}
-		if ($result == -2) {
-			throw new RestException(500, 'Product is a service');
-		}
-		if ($result == -3) {
-			throw new RestException(404, 'Product has no subproducts');
-		}
-		
-		return $result;
+
+		return $result['total'];
 	}
 }

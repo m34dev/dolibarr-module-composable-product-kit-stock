@@ -73,7 +73,7 @@ class modComposableProductKitStock extends DolibarrModules
 		$this->editor_squarred_logo = 'logoSquareM34D.png@composableproductkitstock';					// Must be image filename into the module/img directory followed with @modulename. Example: 'myimage.png@composableproductkitstock'
 
 		// Possible values for version are: 'development', 'experimental', 'dolibarr', 'dolibarr_deprecated', 'experimental_deprecated' or a version string like 'x.y.z'
-		$this->version = '1.2.2';
+		$this->version = '1.3.0';
 		// Url to the file with your last numberversion of this module
 		$this->url_last_version = 'https://github.com/m34dev/dolibarr-module-composable-product-kit-stock/raw/refs/heads/main/versionmodule.txt';
 
@@ -121,7 +121,8 @@ class modComposableProductKitStock extends DolibarrModules
 				       'productcard',
 					   'stockproductcard',
 				       'productcompositioncard',
-					   'productservicelist'
+					   'productservicelist',
+					   'emailtemplates'
 				   ),
 				   'entity' => '0',
 			),
@@ -146,7 +147,7 @@ class modComposableProductKitStock extends DolibarrModules
 		$this->hidden = getDolGlobalInt('MODULE_COMPOSABLEPRODUCTKITSTOCK_DISABLED'); // A condition to disable module;
 		// List of module class names that must be enabled if this module is enabled. Example: array('always'=>array('modModuleToEnable1','modModuleToEnable2'), 'FR'=>array('modModuleToEnableFR')...)
 		$this->depends = array(
-			'always' => array('modProduct', 'modStock'),
+			'always' => array('modProduct', 'modStock', 'modCategorie', 'modAgenda', 'modCron'),
 		);
 		// List of module class names to disable if this one is disabled. Example: array('modModuleToDisable1', ...)
 		$this->requiredby = array();
@@ -159,7 +160,7 @@ class modComposableProductKitStock extends DolibarrModules
 		// Prerequisites
 		$this->phpmin = array(7, 4); // Minimum version of PHP required by module
 		// $this->phpmax = array(8, 0); // Maximum version of PHP required by module
-		$this->need_dolibarr_version = array(18, 0); // Minimum version of Dolibarr required by module
+		$this->need_dolibarr_version = array(21, 0); // Minimum version of Dolibarr required by module
 		// $this->max_dolibarr_version = array(19, -3); // Maximum version of Dolibarr required by module
 		$this->need_javascript_ajax = 0;
 
@@ -174,7 +175,10 @@ class modComposableProductKitStock extends DolibarrModules
 		// Example: $this->const=array(1 => array('COMPOSABLEPRODUCTKITSTOCK_MYNEWCONST1', 'chaine', 'myvalue', 'This is a constant to add', 1),
 		//                             2 => array('COMPOSABLEPRODUCTKITSTOCK_MYNEWCONST2', 'chaine', 'myvalue', 'This is another constant to add', 0, 'current', 1)
 		// );
-		$this->const = array();
+		// Created on activation only if missing, so re-activating the module keeps the admin's choice
+		$this->const = array(
+			0 => array('COMPOSABLEPRODUCTKITSTOCK_WAREHOUSEDETAIL', 'chaine', '1', 'Show composable stock per warehouse', 0, 'current', 0),
+		);
 
 		// Some keys to add into the overwriting translation tables
 		/*$this->overwrite_translation = array(
@@ -269,20 +273,21 @@ class modComposableProductKitStock extends DolibarrModules
 		// unit_frequency must be 60 for minute, 3600 for hour, 86400 for day, 604800 for week
 		/* BEGIN MODULEBUILDER CRON */
 		$this->cronjobs = array(
-			//  0 => array(
-			//      'label' => 'MyJob label',
-			//      'jobtype' => 'method',
-			//      'class' => '/composableproductkitstock/class/myobject.class.php',
-			//      'objectname' => 'MyObject',
-			//      'method' => 'doScheduledJob',
-			//      'parameters' => '',
-			//      'comment' => 'Comment',
-			//      'frequency' => 2,
-			//      'unitfrequency' => 3600,
-			//      'status' => 0,
-			//      'test' => 'isModEnabled("composableproductkitstock")',
-			//      'priority' => 50,
-			//  ),
+			0 => array(
+				// Plain text: the scheduled jobs list does not load module language files
+				'label' => 'Composable Product Kit Stock - Email export',
+				'jobtype' => 'method',
+				'class' => '/composableproductkitstock/class/stockexportmailer.class.php',
+				'objectname' => 'StockExportMailer',
+				'method' => 'runScheduledSending',
+				'parameters' => '',
+				'comment' => 'Sends the composable kit stock export by email to the contacts of a category (see Composable Product Kit Stock module setup)',
+				'frequency' => 1,
+				'unitfrequency' => 3600,
+				'status' => 1,
+				'test' => 'isModEnabled("composableproductkitstock")',
+				'priority' => 50,
+			),
 		);
 		/* END MODULEBUILDER CRON */
 		// Example: $this->cronjobs=array(
@@ -485,9 +490,6 @@ class modComposableProductKitStock extends DolibarrModules
 	public function init($options = '')
 	{
 		global $conf, $langs, $db;
-		
-		$result = dolibarr_set_const($db, 'COMPOSABLEPRODUCTKITSTOCK_WAREHOUSEDETAIL', 1);
-		if($result < 0) return $result;
 
 		// Create tables of module at module activation
 		//$result = $this->_load_tables('/install/mysql/', 'composableproductkitstock');
