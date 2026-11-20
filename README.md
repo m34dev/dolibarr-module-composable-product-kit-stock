@@ -20,7 +20,8 @@ For each subproduct of the kit, the module divides its physical stock by the qua
 - **Services** in the kit are ignored. A subproduct with a quantity of 0 in the kit is ignored.
 - **Negative stock**: a subproduct with a negative stock composes no kit (0).
 - **Nested kits are not expanded**: a subproduct that is itself a kit counts with its own physical stock only, not with what could be composed from its own subproducts. For example, if kit K needs 1 sub-kit S, S is made of 2 Y, S has no stock and Y has 10, K's composable stock is 0.
-- **Stock column of the export**: composable stock for kits (the kit's own physical stock is not added: Dolibarr also moves the kit's stock when a kit is shipped, which would count the shipment twice), physical stock for other products.
+- **Stock column of the export**: composable stock for kits (the kit's own physical stock is not added: Dolibarr also moves the kit's stock when a kit is shipped, which would count the shipment twice), physical stock for other products. The **Physical stock** column gives the product's own physical stock in the same warehouses, for kits as well (a kit's physical stock can be negative, see above).
+- **Combined stock option** (module setup, CSV export and export sent by email): a single stock column, with for kits the kit's physical stock (0 if negative) + composable stock, and for other products the physical stock. The Physical stock column is then not available.
 
 ### Automatic email sending
 

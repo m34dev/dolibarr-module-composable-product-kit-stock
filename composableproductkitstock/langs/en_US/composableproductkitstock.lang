@@ -20,6 +20,8 @@ NoSubSubProduct = No sub subproduct
 NA = N/A
 WarehousesComposableProductKitStockLevel = Composable stock per warehouse:
 COMPOSABLEPRODUCTKITSTOCK_WAREHOUSEDETAIL = Show composable stock per warehouse
+COMPOSABLEPRODUCTKITSTOCK_EXPORT_COMBINED_STOCK = Export: combine physical and composable stock in a single stock column
+COMPOSABLEPRODUCTKITSTOCK_EXPORT_COMBINED_STOCKTooltip = Applies to the CSV export and to the export sent by email. Kits: physical stock of the kit (0 if negative) + composable stock. Other products: physical stock. The physical stock column is then not available.
 
 #
 # Export
@@ -32,6 +34,7 @@ ExportSelectColumn = Standard attributes
 ExportInclude = Include
 ExportDownloadCSV = Download CSV
 ExportEffectiveStock = Stock (composable for kits, physical for other products)
+ExportCombinedStock = Stock (physical + composable for kits)
 ExportFilter = Filters
 #
 # Automatic email sending of the export

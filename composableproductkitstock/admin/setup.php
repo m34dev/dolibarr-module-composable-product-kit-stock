@@ -101,6 +101,12 @@ $yesnooptions = array(
 
 $formSetup->newItem('COMPOSABLEPRODUCTKITSTOCK_WAREHOUSEDETAIL')->setAsYesNo();
 
+// Applies to the CSV export and to the export sent by email. A plain select, not setAsYesNo(): saved with the form,
+// before the exported fields below, so the page reloads with the matching list of fields.
+$combineditem = $formSetup->newItem('COMPOSABLEPRODUCTKITSTOCK_EXPORT_COMBINED_STOCK');
+$combineditem->setAsSelect($yesnooptions);
+$combineditem->defaultFieldValue = '0';
+
 // Export sent by email
 
 $formSetup->newItem('CPKSSetupSectionExport')->setAsTitle();

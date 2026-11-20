@@ -71,9 +71,15 @@ class ComposableProductKitStock
 			'ref'   => $outputlangs->transnoentitiesnoconv('Ref'),
 			'label' => $outputlangs->transnoentitiesnoconv('Label'),
 			'price' => $outputlangs->transnoentitiesnoconv('Price'),
-			'stock' => $outputlangs->transnoentitiesnoconv('ExportEffectiveStock'),
-			'url'   => $outputlangs->transnoentitiesnoconv('PublicUrl'),
 		);
+		if (self::isExportStockCombined()) {
+			// Single stock column: the physical stock is included in it
+			$columns['stock'] = $outputlangs->transnoentitiesnoconv('ExportCombinedStock');
+		} else {
+			$columns['stock'] = $outputlangs->transnoentitiesnoconv('ExportEffectiveStock');
+			$columns['physical_stock'] = $outputlangs->transnoentitiesnoconv('PhysicalStock');
+		}
+		$columns['url'] = $outputlangs->transnoentitiesnoconv('PublicUrl');
 
 		$extrafields = self::getProductExtraFields();
 		if (!empty($extrafields->attributes['product']['label'])) {
@@ -92,7 +98,20 @@ class ComposableProductKitStock
 	 */
 	public static function getDefaultExportColumns()
 	{
-		return array('ref', 'label', 'price', 'stock', 'url');
+		if (self::isExportStockCombined()) {
+			return array('ref', 'label', 'price', 'stock', 'url');
+		}
+		return array('ref', 'label', 'price', 'stock', 'physical_stock', 'url');
+	}
+
+	/**
+	 * Is the export set to a single stock column combining physical and composable stock (module setup).
+	 *
+	 * @return	bool
+	 */
+	public static function isExportStockCombined()
+	{
+		return getDolGlobalInt('COMPOSABLEPRODUCTKITSTOCK_EXPORT_COMBINED_STOCK') > 0;
 	}
 
 	/**
@@ -166,6 +185,7 @@ class ComposableProductKitStock
 
 		$extrafields = self::getProductExtraFields();
 		$extrakeys = empty($extrafields->attributes['product']['label']) ? array() : array_keys($extrafields->attributes['product']['label']);
+		$combined = self::isExportStockCombined();
 
 		$rows = array();
 		foreach ($productIds as $productId) {
@@ -178,15 +198,20 @@ class ComposableProductKitStock
 			}
 			$product->fetch_optionals();
 
-			// Kits: composable stock only. The kit's own physical stock is left out: shipping a kit moves the stock of
-			// the kit as well as of its subproducts, so it goes negative while the composable stock already accounts for it.
+			// Stock column, kits: composable stock only by default. Shipping a kit moves the stock of the kit as well as of
+			// its subproducts, so the kit's own stock goes negative while the composable stock already accounts for it.
+			// With the combined stock option: kit's physical stock (0 if negative, for the same reason) + composable stock.
 			// Other products: physical stock, of the same warehouses as the composable stock.
+			// The physical stock column is the product's own physical stock, for kits as well (can be negative).
+			$product->load_stock(self::STOCK_OPTIONS);
+			$physical_stock = isset($product->stock_reel) ? (float) $product->stock_reel : 0.0;
 			$composable_result = self::getProductKitComposableStock((string) $product->id);
-			if ($composable_result >= 0) {
-				$stock = (float) $composable_result;
+			if ($composable_result < 0) {
+				$stock = $physical_stock;
+			} elseif ($combined) {
+				$stock = max(0.0, $physical_stock) + $composable_result;
 			} else {
-				$product->load_stock(self::STOCK_OPTIONS);
-				$stock = isset($product->stock_reel) ? (float) $product->stock_reel : 0.0;
+				$stock = (float) $composable_result;
 			}
 
 			$values = array(
@@ -194,6 +219,7 @@ class ComposableProductKitStock
 				'label' => (string) $product->label,
 				'price' => isset($product->price) ? (float) $product->price : 0.0,
 				'stock' => $stock,
+				'physical_stock' => $physical_stock,
 				'url'   => (string) $product->url,
 			);
 			foreach ($extrakeys as $key) {
@@ -249,7 +275,7 @@ class ComposableProductKitStock
 			$line = array();
 			foreach ($columns as $col) {
 				$raw = isset($values[$col]) ? $values[$col] : '';
-				if ($col == 'price' || $col == 'stock') {
+				if ($col == 'price' || $col == 'stock' || $col == 'physical_stock') {
 					$cell = self::formatNumber($raw, $separator);
 				} elseif (strpos($col, 'extra_') === 0) {
 					$type = isset($types[substr($col, 6)]) ? $types[substr($col, 6)] : '';

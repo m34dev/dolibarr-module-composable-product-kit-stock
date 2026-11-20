@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sending schedule: daily, weekly or monthly recurrence, sending hours, working days only, number of emails per sending task
 - Test email, recipients preview and configuration warnings in module setup
 - Agenda events on contacts for each sent or failed email
+- Physical stock column in the export
+- Setup option to combine physical and composable stock in a single export stock column
 
 ### Updated
 
