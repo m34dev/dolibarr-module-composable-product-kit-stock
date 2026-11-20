@@ -746,7 +746,10 @@ class StockExportMailer
 
 		$contactname = $contact->getFullName($langs);
 		if ($mail === null) {
-			$this->logEvent($contact, $user, self::EVENT_FAILED, $langs->transnoentitiesnoconv('CPKSEventFailedLabel', $contactname), dol_escape_htmltag($this->error));
+			// Failed attempts are counted from the events: without it, MAX_ATTEMPTS is not enforced
+			if ($this->logEvent($contact, $user, self::EVENT_FAILED, $langs->transnoentitiesnoconv('CPKSEventFailedLabel', $contactname), dol_escape_htmltag($this->error)) < 0) {
+				$this->error .= ' - '.$langs->transnoentitiesnoconv('CPKSErrorEventNotRecorded');
+			}
 			return -1;
 		}
 
@@ -759,7 +762,11 @@ class StockExportMailer
 		$note .= $langs->transnoentitiesnoconv('AttachedFiles').': '.dol_escape_htmltag(basename($mail['file'])).'<br><br>';
 		$note .= ($mail['ishtml'] ? $mail['message'] : dol_nl2br(dol_escape_htmltag($mail['message'])));
 
-		$this->logEvent($contact, $user, self::EVENT_SENT, $langs->transnoentitiesnoconv('CPKSEventSentLabel', $contactname), $note, $mail);
+		// The event is the only record that the contact was sent: without it, the next runs send the export again.
+		// The email was sent, so the result stays a success, with the problem in $this->error.
+		if ($this->logEvent($contact, $user, self::EVENT_SENT, $langs->transnoentitiesnoconv('CPKSEventSentLabel', $contactname), $note, $mail) < 0) {
+			$this->error = $langs->transnoentitiesnoconv('CPKSErrorEventNotRecorded');
+		}
 
 		return 1;
 	}
@@ -928,7 +935,7 @@ class StockExportMailer
 
 		$result = $actioncomm->create($user);
 		if ($result < 0) {
-			dol_syslog(__METHOD__.' failed to create agenda event for contact '.$contact->id.': '.$actioncomm->error.' '.implode(',', $actioncomm->errors), LOG_WARNING);
+			dol_syslog(__METHOD__.' failed to create agenda event '.$code.' for contact '.$contact->id.': '.$actioncomm->error.' '.implode(',', $actioncomm->errors), LOG_ERR);
 		}
 		return $result;
 	}
@@ -999,6 +1006,7 @@ class StockExportMailer
 		$batchsize = $this->getBatchSize();
 		$nbsent = 0;
 		$nbfailed = 0;
+		$nbnotrecorded = 0;
 		$details = array();
 		foreach ($recipients as $contact) {
 			if ($nbsent + $nbfailed >= $batchsize) {
@@ -1006,7 +1014,13 @@ class StockExportMailer
 			}
 			if ($this->sendToContact($contact, $user) > 0) {
 				$nbsent++;
-				$details[] = $contact->email.': '.$langs->trans('CPKSSent');
+				if ($this->error !== '') {
+					// Sent, but the agenda event was not recorded
+					$nbnotrecorded++;
+					$details[] = $contact->email.': '.$langs->trans('CPKSSent').' - '.$this->error;
+				} else {
+					$details[] = $contact->email.': '.$langs->trans('CPKSSent');
+				}
 			} else {
 				$nbfailed++;
 				$details[] = $contact->email.': '.$this->error;
@@ -1017,6 +1031,9 @@ class StockExportMailer
 		$remaining = count($recipients) - $nbsent - $nbfailed;
 		$this->error = '';
 		$this->output = $langs->trans('CPKSCronSummary', $nbsent, $nbfailed, $remaining);
+		if ($nbnotrecorded > 0) {
+			$this->output .= '. '.$langs->trans('CPKSCronEventsNotRecorded', $nbnotrecorded);
+		}
 		dolibarr_set_const($this->db, 'COMPOSABLEPRODUCTKITSTOCK_EMAIL_LASTRUN', dol_print_date(dol_now(), 'dayhour', 'tzserver').' - '.$this->output, 'chaine', 0, '', $conf->entity);
 		if (!empty($details)) {
 			$this->output .= "\n".implode("\n", $details);

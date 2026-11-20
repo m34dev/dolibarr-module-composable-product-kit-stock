@@ -5,20 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.0] - 2026-11-17
+## [1.3.0] - 2026-11-20
 
 ### Added
 
-- Automatic sending of the composable stock export by email to the contacts of a category
+- Automatic sending of the composable stock export by email to the contacts of a category, with an hourly scheduled job
+- Emailed export: products of a category and its sub-categories, on sale only, with the selected fields
 - Email template type "Composable kit stock export" in email templates setup
 - Sending schedule: daily, weekly or monthly recurrence, sending hours, working days only, number of emails per sending task
-- Test email and recipients preview in module setup
+- Test email, recipients preview and configuration warnings in module setup
 - Agenda events on contacts for each sent or failed email
 
 ### Updated
 
 - CSV exports use Dolibarr's CSV separator setting, with a decimal comma when the separator is a semicolon
 - Minimum Dolibarr version 21
+- Requires the Categories, Agenda and Scheduled jobs modules
+
+### Fixed
+
+- Composable stock when a subproduct has a negative stock (was shown as N/A or "No subproduct", or hidden)
+- Error when a subproduct has a quantity of 0 in the kit
+- Composable stock rounding with decimal subproduct quantities
+- Checkbox extrafields exported as 0/1 instead of their values
 
 ## [1.2.2] - 2026-09-08
 

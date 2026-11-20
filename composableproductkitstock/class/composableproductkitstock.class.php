@@ -244,7 +244,8 @@ class ComposableProductKitStock
 						$cell = $raw ? dol_print_date((int) $raw, 'day', 'auto', $outputlangs) : '';
 					} elseif ($type === 'datetime') {
 						$cell = $raw ? dol_print_date((int) $raw, 'dayhour', 'auto', $outputlangs) : '';
-					} elseif ($type === 'boolean' || $type === 'checkbox') {
+					} elseif ($type === 'boolean') {
+						// Not 'checkbox': it is a multi-value list of keys (e.g. "1,3"), exported as stored like select and radio
 						$cell = $raw ? '1' : '0';
 					} elseif (($type === 'double' || $type === 'price') && $raw !== '' && $raw !== null) {
 						$cell = self::formatNumber($raw, $separator);
@@ -339,6 +340,11 @@ class ComposableProductKitStock
 				dol_syslog('Product Ref: ' . $product_ref, LOG_DEBUG);
 				foreach($subproducts_data as $subproduct_id => $subproduct_data) {
 					dol_syslog('Subproduct ID: ' . $subproduct_id, LOG_DEBUG);
+					// A quantity of 0 (possible through the API, an import or SQL) consumes nothing: it does not limit the kit
+					if ((float) $subproduct_data[1] <= 0) {
+						dol_syslog('Subproduct ID: ' . $subproduct_id . ' has no quantity in the kit, ignored', LOG_WARNING);
+						continue;
+					}
 					$subproduct = new Product($db);
 					$result = $subproduct->fetch($subproduct_id);
 					if($result < 1) {
@@ -363,13 +369,15 @@ class ComposableProductKitStock
 								dol_syslog('Subproduct physical stock: ' . $subproducts_physical_stock[$subproduct_id], LOG_DEBUG);
 							}
 						}
-						$product_required_subproduct_quantities[$subproduct_id] = $subproduct_data[1];
+						$product_required_subproduct_quantities[$subproduct_id] = (float) $subproduct_data[1];
 						dol_syslog('Product required subproduct ' . $subproduct_id . ' quantity: ' . $product_required_subproduct_quantities[$subproduct_id], LOG_DEBUG);
 					}
 				}
 			}
 			foreach($subproducts_physical_stock as $subproduct_id => $subproduct_physical_stock) {
-				$subproduct_composable_stock = floor($subproduct_physical_stock / $product_required_subproduct_quantities[$subproduct_id]);
+				// Rounded to the stock precision before floor(): with decimal quantities, 0.3 / 0.1 gives 2.9999999999999996
+				// A negative stock composes no kit: clamped to 0, so the result never collides with the error codes
+				$subproduct_composable_stock = max(0, (int) floor((float) price2num((float) $subproduct_physical_stock / $product_required_subproduct_quantities[$subproduct_id], 'MS', 1)));
 				$max_composable_subproduct_stock[$subproduct_id] = $subproduct_composable_stock;
 				dol_syslog('Subproduct ID: ' . $subproduct_id . ' composable stock: ' . $subproduct_composable_stock, LOG_DEBUG);
 			}
