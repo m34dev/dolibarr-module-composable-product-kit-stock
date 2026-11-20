@@ -11,6 +11,17 @@ Get product kit composable stock. A product's composable stock is a virtual stoc
 - Export composable product kit stock to CSV
 - Send the composable stock export automatically by email to the contacts of a category, using Dolibarr email templates and scheduled jobs
 
+### How composable stock is calculated
+
+For each subproduct of the kit, the module divides its physical stock by the quantity needed in the kit and rounds down. The kit's composable stock is the smallest of these values.
+
+- **Warehouses**: only open warehouses count (open and internal ones when the warehouse extra status is enabled). Stock in closed warehouses is ignored. The total combines all these warehouses, as if the subproducts could be transferred to one place; the per-warehouse detail shows what can be composed in each warehouse on its own.
+- **Every subproduct counts**, including those where "Increase/Decrease stock on parent change" is unticked on the kit's composition tab: they are still physically needed to compose a kit.
+- **Services** in the kit are ignored. A subproduct with a quantity of 0 in the kit is ignored.
+- **Negative stock**: a subproduct with a negative stock composes no kit (0).
+- **Nested kits are not expanded**: a subproduct that is itself a kit counts with its own physical stock only, not with what could be composed from its own subproducts. For example, if kit K needs 1 sub-kit S, S is made of 2 Y, S has no stock and Y has 10, K's composable stock is 0.
+- **Stock column of the export**: composable stock for kits (the kit's own physical stock is not added: Dolibarr also moves the kit's stock when a kit is shipped, which would count the shipment twice), physical stock for other products.
+
 ### Automatic email sending
 
 Configure it in the module setup page:

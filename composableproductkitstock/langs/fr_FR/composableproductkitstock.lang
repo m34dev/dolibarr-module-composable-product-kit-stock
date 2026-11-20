@@ -13,7 +13,7 @@ Settings = Settings
 ComposableProductKitStockSetupPage = Options
 ComposableProductKitStockLevelShort = Stock composable
 ComposableProductKitStockLevel = Total stock composable produit kit
-ComposableProductKitStockLevelTip = Nombre maximum de produits kit composables. Basé sur le stock physique disponible des sous-produits.
+ComposableProductKitStockLevelTip = Nombre maximum de kits composables avec le stock physique des sous-produits, tous entrepôts ouverts confondus. Chaque sous-produit compte, et un sous-produit qui est lui-même un kit compte uniquement pour son propre stock physique.
 ComposableProductKitStockLevelSubProduct = Stock composable sous-produit
 NoSubProduct = Aucun sous-produit
 NoSubSubProduct = Aucun sous sous-produit
@@ -31,7 +31,7 @@ ComposableStock = Stock composable
 ExportSelectColumn = Attributs standards
 ExportInclude = Inclure
 ExportDownloadCSV = Télécharger CSV
-ExportEffectiveStock = Stock (Physique + Composable)
+ExportEffectiveStock = Stock (composable pour les kits, physique pour les autres produits)
 ExportFilter = Filtres
 #
 # Envoi automatique de l'export par email

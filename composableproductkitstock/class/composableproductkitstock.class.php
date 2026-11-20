@@ -31,6 +31,12 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/extrafields.class.php';
 class ComposableProductKitStock
 {
 	/**
+	 * Product::load_stock() options: physical stock only, of open warehouses (and internal ones when
+	 * the warehouse extra status is enabled). Stock in closed warehouses cannot be used.
+	 */
+	const STOCK_OPTIONS = 'nobatch,novirtual,warehouseopen,warehouseinternal';
+
+	/**
 	 * @var ExtraFields|null	Product extrafields, loaded once
 	 */
 	private static $productExtraFields = null;
@@ -170,17 +176,24 @@ class ComposableProductKitStock
 			if ($onSaleOnly && empty($product->status)) {
 				continue;
 			}
-			$product->load_stock('nobatch');
 			$product->fetch_optionals();
 
-			$real_stock = isset($product->stock_reel) ? (float) $product->stock_reel : 0.0;
+			// Kits: composable stock only. The kit's own physical stock is left out: shipping a kit moves the stock of
+			// the kit as well as of its subproducts, so it goes negative while the composable stock already accounts for it.
+			// Other products: physical stock, of the same warehouses as the composable stock.
 			$composable_result = self::getProductKitComposableStock((string) $product->id);
+			if ($composable_result >= 0) {
+				$stock = (float) $composable_result;
+			} else {
+				$product->load_stock(self::STOCK_OPTIONS);
+				$stock = isset($product->stock_reel) ? (float) $product->stock_reel : 0.0;
+			}
 
 			$values = array(
 				'ref'   => (string) $product->ref,
 				'label' => (string) $product->label,
 				'price' => isset($product->price) ? (float) $product->price : 0.0,
-				'stock' => ($composable_result >= 0) ? $real_stock + $composable_result : $real_stock,
+				'stock' => $stock,
 				'url'   => (string) $product->url,
 			);
 			foreach ($extrakeys as $key) {
@@ -354,7 +367,7 @@ class ComposableProductKitStock
 					if($subproduct->type == Product::TYPE_SERVICE) {
 						dol_syslog('Subproduct is a service', LOG_DEBUG);
 					} else {
-						$result = $subproduct->load_stock('nobatch,novirtual');
+						$result = $subproduct->load_stock(self::STOCK_OPTIONS);
 						if($result < 1) {
 							dol_syslog('Error loading stock, subproduct ID: ' . $subproduct_id, LOG_ERR);
 						}
@@ -407,8 +420,12 @@ class ComposableProductKitStock
 			return -1;
 		}
 		$warehouses_product_kit_composable_stock = array();
+		// Same warehouses as STOCK_OPTIONS: open ones, and internal ones when the warehouse extra status is enabled
 		$warehouse = new Entrepot($db);
-		$warehouses = $warehouse->list_array();
+		$warehouses = $warehouse->list_array(Entrepot::STATUS_OPEN_ALL);
+		if (getDolGlobalString('ENTREPOT_EXTRA_STATUS')) {
+			$warehouses += $warehouse->list_array(Entrepot::STATUS_OPEN_INTERNAL);
+		}
 		foreach($warehouses as $warehouse_id => $warehouse_ref) {
 			dol_syslog('Warehouse ID: ' . $warehouse_id, LOG_DEBUG);
 			$warehouse_product_kit_composable_stock = ComposableProductKitStock::getProductKitComposableStock($product_id, $warehouse_id);

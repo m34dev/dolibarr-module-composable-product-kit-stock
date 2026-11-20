@@ -21,9 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CSV exports use Dolibarr's CSV separator setting, with a decimal comma when the separator is a semicolon
 - Minimum Dolibarr version 21
 - Requires the Categories, Agenda and Scheduled jobs modules
+- Export stock column: composable stock for kits, physical stock for other products (was physical + composable)
+- Composable stock and exported physical stock ignore closed warehouses
+- Composable stock calculation documented in README
 
 ### Fixed
 
+- Composable stock per warehouse missing the internal warehouses
 - Composable stock when a subproduct has a negative stock (was shown as N/A or "No subproduct", or hidden)
 - Error when a subproduct has a quantity of 0 in the kit
 - Composable stock rounding with decimal subproduct quantities
