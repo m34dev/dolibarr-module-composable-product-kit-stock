@@ -15,7 +15,11 @@ Get product kit composable stock. A product's composable stock is a virtual stoc
 
 For each subproduct of the kit, the module divides its physical stock by the quantity needed in the kit and rounds down. The kit's composable stock is the smallest of these values.
 
-- **Warehouses**: only open warehouses count (open and internal ones when the warehouse extra status is enabled). Stock in closed warehouses is ignored. The total combines all these warehouses, as if the subproducts could be transferred to one place; the per-warehouse detail shows what can be composed in each warehouse on its own.
+- **Warehouses**: only open warehouses count (open and internal ones when the warehouse extra status is enabled). Stock in closed warehouses is ignored. The total combines all these warehouses, as if the subproducts could be transferred to one place; the per-warehouse detail shows what can be composed in each warehouse on its own, and lists only the warehouses where at least one kit can be composed.
+- **Total vs. per-warehouse detail**: the total is usually **higher than the sum of the per-warehouse values**. This is expected: the difference is the number of kits that can only be composed by transferring subproducts between warehouses. It happens when:
+  - subproducts are in different warehouses: 10 A in warehouse 1 and 10 B in warehouse 2, for a kit of 1 A + 1 B, compose 0 kits in each warehouse but 10 in total. A warehouse holding only some of the subproducts composes 0 kits and is not listed, but its stock counts in the total;
+  - leftovers add up: for a kit of 2 A, 3 A in warehouse 1 and 3 A in warehouse 2 compose 1 kit in each warehouse (2 in all) but 3 in total;
+  - the limiting subproduct differs between warehouses: the surplus of one warehouse covers the shortage of another.
 - **Every subproduct counts**, including those where "Increase/Decrease stock on parent change" is unticked on the kit's composition tab: they are still physically needed to compose a kit.
 - **Services** in the kit are ignored. A subproduct with a quantity of 0 in the kit is ignored.
 - **Negative stock**: a subproduct with a negative stock composes no kit (0).
